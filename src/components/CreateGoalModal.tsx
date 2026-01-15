@@ -34,6 +34,8 @@ export const CreateGoalModal = ({
   onSubmit,
 }: CreateGoalModalProps) => {
   const [loading, setLoading] = useState(false);
+  const [imageInputKey, setImageInputKey] = useState(0);
+  const [uploadedImageName, setUploadedImageName] = useState('');
   const [formData, setFormData] = useState<GoalFormData>({
     name: '',
     targetAmount: 0,
@@ -47,10 +49,39 @@ export const CreateGoalModal = ({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type } = e.target;
+    const nextValue = type === 'number' ? parseFloat(value) || 0 : value;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === 'number' ? parseFloat(value) || 0 : value,
+      [name]: nextValue,
     }));
+
+    if (name === 'imageUrl') {
+      setUploadedImageName('');
+    }
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Envie um arquivo de imagem');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result;
+      if (typeof result === 'string') {
+        setFormData((prev) => ({
+          ...prev,
+          imageUrl: result,
+        }));
+        setUploadedImageName(file.name);
+        toast.success('Imagem carregada!');
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSearchImage = async () => {
@@ -60,6 +91,7 @@ export const CreateGoalModal = ({
     }
     
     setLoading(true);
+    setUploadedImageName('');
     // Mock image search - in production, this would call an API
     setTimeout(() => {
       setFormData((prev) => ({
@@ -95,6 +127,8 @@ export const CreateGoalModal = ({
       targetDate: '',
       safetyMargin: 10,
     });
+    setUploadedImageName('');
+    setImageInputKey((prev) => prev + 1);
     onClose();
     toast.success('Meta criada com sucesso!');
   };
@@ -208,27 +242,43 @@ export const CreateGoalModal = ({
               <ImageIcon className="w-4 h-4" />
               Imagem
             </Label>
-            <div className="flex gap-2">
-              <Input
-                name="imageUrl"
-                value={formData.imageUrl}
-                onChange={handleChange}
-                placeholder="URL da imagem ou busque automaticamente"
-                className="h-11 flex-1"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleSearchImage}
-                disabled={loading}
-                className="h-11 px-4"
-              >
-                {loading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  'Buscar'
+            <div className="flex flex-col gap-2">
+              <div className="flex gap-2">
+                <Input
+                  name="imageUrl"
+                  value={formData.imageUrl}
+                  onChange={handleChange}
+                  placeholder="URL da imagem ou busque automaticamente"
+                  className="h-11 flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleSearchImage}
+                  disabled={loading}
+                  className="h-11 px-4"
+                >
+                  {loading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    'Buscar'
+                  )}
+                </Button>
+              </div>
+              <div className="flex items-center gap-2">
+                <Input
+                  key={imageInputKey}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="h-11 file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-secondary file:text-sm file:font-medium file:text-foreground hover:file:bg-secondary/80"
+                />
+                {uploadedImageName && (
+                  <span className="text-xs text-muted-foreground truncate">
+                    {uploadedImageName}
+                  </span>
                 )}
-              </Button>
+              </div>
             </div>
             {formData.imageUrl && (
               <div className="mt-2 rounded-lg overflow-hidden w-24 h-24 bg-secondary">
