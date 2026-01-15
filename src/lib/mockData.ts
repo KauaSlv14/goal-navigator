@@ -58,6 +58,10 @@ export const mockGoals: Goal[] = [
   },
 ];
 
+export const addGoal = (goal: Goal) => {
+  mockGoals.unshift(goal);
+};
+
 export const mockTransactions: Transaction[] = [
   {
     id: 't1',

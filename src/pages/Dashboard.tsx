@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { GoalCard } from '@/components/GoalCard';
 import { CreateGoalModal, GoalFormData } from '@/components/CreateGoalModal';
 import { CelebrationModal } from '@/components/CelebrationModal';
-import { getAllGoalsWithProgress } from '@/lib/mockData';
+import { getAllGoalsWithProgress, addGoal } from '@/lib/mockData';
 import { formatCurrency, GoalWithProgress } from '@/lib/types';
 import {
   Target,
@@ -36,6 +36,10 @@ export const Dashboard = () => {
   };
 
   const handleCreateGoal = (data: GoalFormData) => {
+    const totalCurrent = data.initialCash + data.initialPix;
+    const percentage = (totalCurrent / data.targetAmount) * 100;
+    const isCompleted = percentage >= 100;
+
     const newGoal: GoalWithProgress = {
       id: `goal-${Date.now()}`,
       userId: 'user1',
@@ -49,17 +53,32 @@ export const Dashboard = () => {
       safetyMargin: data.safetyMargin,
       createdAt: new Date(),
       updatedAt: new Date(),
-      isCompleted: false,
-      totalCurrent: data.initialCash + data.initialPix,
-      percentage: ((data.initialCash + data.initialPix) / data.targetAmount) * 100,
+      isCompleted,
+      totalCurrent,
+      percentage,
       transactions: [],
       recurringPayments: [],
     };
 
     setGoals((prev) => [newGoal, ...prev]);
+    addGoal({
+      id: newGoal.id,
+      userId: newGoal.userId,
+      name: newGoal.name,
+      targetAmount: newGoal.targetAmount,
+      currentCash: newGoal.currentCash,
+      currentPix: newGoal.currentPix,
+      imageUrl: newGoal.imageUrl,
+      productLink: newGoal.productLink,
+      targetDate: newGoal.targetDate,
+      safetyMargin: newGoal.safetyMargin,
+      createdAt: newGoal.createdAt,
+      updatedAt: newGoal.updatedAt,
+      isCompleted: newGoal.isCompleted,
+    });
 
     // Check if goal is immediately completed
-    if (newGoal.percentage >= 100) {
+    if (newGoal.isCompleted) {
       setTimeout(() => setCelebrationGoal(newGoal), 500);
     }
   };
