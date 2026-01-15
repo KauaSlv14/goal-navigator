@@ -1,6 +1,6 @@
 export type TransactionType = 'cash' | 'pix';
 export type TransactionCategory = 'entrada' | 'saida';
-export type RecurrenceFrequency = 'diario' | 'semanal' | 'mensal' | 'anual';
+export type RecurrenceFrequency = 'Diario' | 'semanal' | 'mensal' | 'anual';
 
 export interface Transaction {
   id: string;
@@ -50,6 +50,35 @@ export interface GoalWithProgress extends Goal {
   recurringPayments: RecurringPayment[];
 }
 
+export interface GoalFormData {
+  name: string;
+  targetAmount: number;
+  initialCash: number;
+  initialPix: number;
+  productLink: string;
+  imageUrl: string;
+  targetDate: string;
+  safetyMargin: number;
+}
+
+export interface TransactionFormData {
+  amount: number;
+  type: TransactionType;
+  category: TransactionCategory;
+  description: string;
+}
+
+export interface RecurringFormData {
+  name: string;
+  amount: number;
+  type: TransactionType;
+  category: TransactionCategory;
+  frequency: RecurrenceFrequency;
+  dayOfMonth?: number;
+  dayOfWeek?: number;
+  startsAt?: string;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -87,7 +116,7 @@ export const formatDateShort = (date: Date): string => {
 
 export const convertToMonthlyRate = (amount: number, frequency: RecurrenceFrequency): number => {
   switch (frequency) {
-    case 'diario':
+    case 'Diario':
       return amount * 30;
     case 'semanal':
       return amount * 4.345;
@@ -138,7 +167,7 @@ export const calculateForecast = (
 };
 
 export const frequencyLabels: Record<RecurrenceFrequency, string> = {
-  diario: 'Diário',
+  diario: 'Diario',
   semanal: 'Semanal',
   mensal: 'Mensal',
   anual: 'Anual',

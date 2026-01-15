@@ -1,19 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ProgressBar } from '@/components/ProgressBar';
 import { TransactionItem } from '@/components/TransactionItem';
 import { RecurringPaymentItem } from '@/components/RecurringPaymentItem';
 import { ForecastCard } from '@/components/ForecastCard';
-import { AddTransactionModal, TransactionFormData } from '@/components/AddTransactionModal';
+import { AddTransactionModal } from '@/components/AddTransactionModal';
 import { CelebrationModal } from '@/components/CelebrationModal';
-import { getGoalWithProgress } from '@/lib/mockData';
 import {
   GoalWithProgress,
+  TransactionFormData,
+  RecurringFormData,
+  calculateForecast,
   formatCurrency,
   formatDate,
-  calculateForecast,
-  Transaction,
 } from '@/lib/types';
 import {
   ArrowLeft,
@@ -30,27 +30,79 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { createRecurringPayment, createTransaction, deleteGoal as deleteGoalApi, getGoalDetails } from '@/lib/api';
+import { AddRecurringModal } from '@/components/AddRecurringModal';
 
 export const GoalDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
   const [goal, setGoal] = useState<GoalWithProgress | null>(null);
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
+  const [isRecurringModalOpen, setIsRecurringModalOpen] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
 
-  useEffect(() => {
-    if (id) {
-      const goalData = getGoalWithProgress(id);
-      if (goalData) {
-        setGoal(goalData);
-      } else {
-        navigate('/dashboard');
-        toast.error('Meta não encontrada');
-      }
-    }
-  }, [id, navigate]);
+  const goalQuery = useQuery({
+    queryKey: ['goal', id],
+    queryFn: () => getGoalDetails(id!),
+    enabled: !!id,
+    retry: false,
+    onSuccess: (data) => setGoal(data),
+    onError: () => {
+      toast.error('Meta não encontrada');
+      navigate('/dashboard');
+    },
+  });
 
-  if (!goal) {
+  const transactionMutation = useMutation({
+    mutationFn: (payload: TransactionFormData) => createTransaction(id!, payload),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['goal', id] });
+      const updated = await queryClient.fetchQuery({
+        queryKey: ['goal', id],
+        queryFn: () => getGoalDetails(id!),
+      });
+      setGoal(updated);
+      if (!goal?.isCompleted && updated.isCompleted) {
+        setTimeout(() => setShowCelebration(true), 500);
+      }
+    },
+    onError: (err: any) => toast.error(err?.message ?? 'Não foi possível registrar a transação'),
+  });
+
+  const recurringMutation = useMutation({
+    mutationFn: (payload: RecurringFormData) => createRecurringPayment(id!, payload),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['goal', id] });
+      const updated = await queryClient.fetchQuery({
+        queryKey: ['goal', id],
+        queryFn: () => getGoalDetails(id!),
+      });
+      setGoal(updated);
+      toast.success('Recorrência criada!');
+    },
+    onError: (err: any) => toast.error(err?.message ?? 'Não foi possível criar a recorrência'),
+  });
+
+  useEffect(() => {
+    if (goalQuery.data) {
+      setGoal(goalQuery.data);
+    }
+  }, [goalQuery.data]);
+
+  const deleteGoalMutation = useMutation({
+    mutationFn: () => deleteGoalApi(id!),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['goals'] });
+      toast.success('Meta excluída com sucesso');
+      navigate('/dashboard');
+    },
+    onError: (err: any) => toast.error(err?.message ?? 'Não foi possível excluir a meta'),
+  });
+
+  if (goalQuery.isLoading || !goal) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-pulse flex items-center gap-2">
@@ -69,57 +121,17 @@ export const GoalDetails = () => {
 
   const remaining = goal.targetAmount - goal.totalCurrent;
 
-  const handleAddTransaction = (data: TransactionFormData) => {
-    const newTransaction: Transaction = {
-      id: `t-${Date.now()}`,
-      goalId: goal.id,
-      amount: data.amount,
-      type: data.type,
-      category: data.category,
-      description: data.description,
-      createdAt: new Date(),
-    };
-
-    const updatedCash =
-      data.category === 'entrada'
-        ? goal.currentCash + (data.type === 'cash' ? data.amount : 0)
-        : goal.currentCash - (data.type === 'cash' ? data.amount : 0);
-
-    const updatedPix =
-      data.category === 'entrada'
-        ? goal.currentPix + (data.type === 'pix' ? data.amount : 0)
-        : goal.currentPix - (data.type === 'pix' ? data.amount : 0);
-
-    const updatedTotal = updatedCash + updatedPix;
-    const updatedPercentage = Math.min(100, (updatedTotal / goal.targetAmount) * 100);
-
-    const wasCompleted = goal.isCompleted;
-    const isNowCompleted = updatedPercentage >= 100;
-
-    setGoal((prev) =>
-      prev
-        ? {
-            ...prev,
-            currentCash: updatedCash,
-            currentPix: updatedPix,
-            totalCurrent: updatedTotal,
-            percentage: updatedPercentage,
-            isCompleted: isNowCompleted,
-            transactions: [newTransaction, ...prev.transactions],
-          }
-        : null
-    );
-
-    // Show celebration if just completed
-    if (!wasCompleted && isNowCompleted) {
-      setTimeout(() => setShowCelebration(true), 500);
-    }
+  const handleAddTransaction = async (data: TransactionFormData) => {
+    await transactionMutation.mutateAsync(data);
   };
 
-  const handleDelete = () => {
+  const handleAddRecurring = async (data: RecurringFormData) => {
+    await recurringMutation.mutateAsync(data);
+  };
+
+  const handleDelete = async () => {
     if (confirm('Tem certeza que deseja excluir esta meta?')) {
-      toast.success('Meta excluída com sucesso');
-      navigate('/dashboard');
+      await deleteGoalMutation.mutateAsync();
     }
   };
 
@@ -187,7 +199,7 @@ export const GoalDetails = () => {
               </div>
               {goal.isCompleted && (
                 <span className="px-3 py-1 bg-success/10 text-success text-sm font-bold rounded-full">
-                  ✓ Concluída
+                  🎉 Concluída
                 </span>
               )}
             </div>
@@ -301,16 +313,16 @@ export const GoalDetails = () => {
                     <p className="text-muted-foreground">
                       Nenhum pagamento recorrente
                     </p>
-                    <Button
-                      variant="outline"
-                      className="mt-4"
-                      onClick={() => toast.info('Em breve!')}
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Adicionar Recorrente
-                    </Button>
                   </div>
                 )}
+                <Button
+                  variant="outline"
+                  className="mt-4 w-full"
+                  onClick={() => setIsRecurringModalOpen(true)}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Adicionar Recorrente
+                </Button>
               </div>
             </TabsContent>
           </Tabs>
@@ -323,6 +335,13 @@ export const GoalDetails = () => {
         onClose={() => setIsTransactionModalOpen(false)}
         onSubmit={handleAddTransaction}
         goalName={goal.name}
+      />
+
+      {/* Add Recurring Modal */}
+      <AddRecurringModal
+        isOpen={isRecurringModalOpen}
+        onClose={() => setIsRecurringModalOpen(false)}
+        onSubmit={handleAddRecurring}
       />
 
       {/* Celebration Modal */}

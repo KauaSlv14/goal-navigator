@@ -1,0 +1,164 @@
+import {
+  GoalWithProgress,
+  RecurringFormData,
+  RecurringPayment,
+  TransactionFormData,
+  GoalFormData,
+} from './types';
+
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3333';
+
+interface ApiTransaction {
+  id: string;
+  goalId: string;
+  amount: number;
+  type: 'cash' | 'pix';
+  category: 'entrada' | 'saida';
+  description?: string;
+  createdAt: string;
+}
+
+interface ApiRecurring {
+  id: string;
+  goalId: string;
+  name: string;
+  amount: number;
+  type: 'cash' | 'pix';
+  category: 'entrada' | 'saida';
+  frequency: RecurringFormData['frequency'];
+  dayOfMonth?: number;
+  dayOfWeek?: number;
+  nextRunAt: string;
+  lastRunAt?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface ApiGoal {
+  id: string;
+  userId: string;
+  name: string;
+  targetAmount: number;
+  imageUrl?: string;
+  productLink?: string;
+  targetDate?: string;
+  safetyMargin: number;
+  createdAt: string;
+  updatedAt: string;
+  isCompleted: boolean;
+  currentCash: number;
+  currentPix: number;
+  totalCurrent: number;
+  percentage: number;
+  transactions?: ApiTransaction[];
+  recurringPayments?: ApiRecurring[];
+}
+
+const handleResponse = async (res: Response) => {
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    const message = data?.error || res.statusText || 'Erro na requisição';
+    throw new Error(message);
+  }
+  return res.json();
+};
+
+const mapRecurring = (rec: ApiRecurring): RecurringPayment => ({
+  id: rec.id,
+  goalId: rec.goalId,
+  name: rec.name,
+  amount: rec.amount,
+  type: rec.type,
+  category: rec.category,
+  frequency: rec.frequency,
+  dayOfMonth: rec.dayOfMonth,
+  dayOfWeek: rec.dayOfWeek,
+  nextExecution: new Date(rec.nextRunAt),
+  lastExecution: rec.lastRunAt ? new Date(rec.lastRunAt) : undefined,
+  isActive: rec.isActive,
+});
+
+const mapGoal = (goal: ApiGoal): GoalWithProgress => ({
+  id: goal.id,
+  userId: goal.userId,
+  name: goal.name,
+  targetAmount: goal.targetAmount,
+  currentCash: goal.currentCash,
+  currentPix: goal.currentPix,
+  imageUrl: goal.imageUrl,
+  productLink: goal.productLink,
+  targetDate: goal.targetDate ? new Date(goal.targetDate) : undefined,
+  safetyMargin: goal.safetyMargin,
+  createdAt: new Date(goal.createdAt),
+  updatedAt: new Date(goal.updatedAt),
+  isCompleted: goal.isCompleted,
+  totalCurrent: goal.totalCurrent,
+  percentage: goal.percentage,
+  transactions:
+    goal.transactions?.map((t) => ({
+      id: t.id,
+      goalId: t.goalId,
+      amount: t.amount,
+      type: t.type,
+      category: t.category,
+      description: t.description,
+      createdAt: new Date(t.createdAt),
+    })) ?? [],
+  recurringPayments: goal.recurringPayments?.map(mapRecurring) ?? [],
+});
+
+export const getGoals = async (): Promise<GoalWithProgress[]> => {
+  const res = await fetch(`${API_URL}/api/goals`);
+  const data: ApiGoal[] = await handleResponse(res);
+  return data.map(mapGoal);
+};
+
+export const createGoal = async (payload: GoalFormData): Promise<GoalWithProgress> => {
+  const res = await fetch(`${API_URL}/api/goals`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      ...payload,
+      productLink: payload.productLink || undefined,
+      imageUrl: payload.imageUrl || undefined,
+      targetDate: payload.targetDate || undefined,
+    }),
+  });
+  const data: ApiGoal = await handleResponse(res);
+  return mapGoal(data);
+};
+
+export const getGoalDetails = async (id: string): Promise<GoalWithProgress> => {
+  const res = await fetch(`${API_URL}/api/goals/${id}`);
+  const data: ApiGoal = await handleResponse(res);
+  return mapGoal(data);
+};
+
+export const createTransaction = async (goalId: string, payload: TransactionFormData) => {
+  const res = await fetch(`${API_URL}/api/goals/${goalId}/transactions`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  await handleResponse(res);
+};
+
+export const createRecurringPayment = async (goalId: string, payload: RecurringFormData) => {
+  const res = await fetch(`${API_URL}/api/goals/${goalId}/recurring`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  await handleResponse(res);
+};
+
+export const runRecurringNow = async () => {
+  const res = await fetch(`${API_URL}/api/recurring/run`, { method: 'POST' });
+  return handleResponse(res);
+};
+
+export const deleteGoal = async (goalId: string) => {
+  const res = await fetch(`${API_URL}/api/goals/${goalId}`, { method: 'DELETE' });
+  await handleResponse(res);
+};

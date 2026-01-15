@@ -1,0 +1,93 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum TransactionType {
+  cash
+  pix
+}
+
+enum TransactionCategory {
+  entrada
+  saida
+}
+
+enum RecurrenceFrequency {
+  diario
+  semanal
+  mensal
+  anual
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  goals        Goal[]
+  transactions Transaction[] @relation("UserTransactions")
+}
+
+model Goal {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  name          String
+  targetAmount  Decimal  @db.Decimal(12, 2)
+  imageUrl      String?
+  productLink   String?
+  targetDate    DateTime?
+  safetyMargin  Int      @default(0)
+  initialCash   Decimal  @db.Decimal(12, 2) @default(0)
+  initialPix    Decimal  @db.Decimal(12, 2) @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  isCompleted   Boolean  @default(false)
+
+  transactions      Transaction[]
+  recurringPayments RecurringPayment[]
+}
+
+model Transaction {
+  id              String             @id @default(uuid())
+  goalId          String
+  goal            Goal               @relation(fields: [goalId], references: [id])
+  amount          Decimal            @db.Decimal(12, 2)
+  type            TransactionType
+  category        TransactionCategory
+  description     String?
+  createdAt       DateTime           @default(now())
+  createdByUserId String?
+  createdByUser   User?              @relation("UserTransactions", fields: [createdByUserId], references: [id])
+}
+
+model RecurringPayment {
+  id         String              @id @default(uuid())
+  goalId     String
+  goal       Goal                @relation(fields: [goalId], references: [id])
+  name       String
+  amount     Decimal             @db.Decimal(12, 2)
+  type       TransactionType
+  category   TransactionCategory
+  frequency  RecurrenceFrequency
+  dayOfMonth Int?
+  dayOfWeek  Int?
+  nextRunAt  DateTime
+  lastRunAt  DateTime?
+  isActive   Boolean             @default(true)
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+}

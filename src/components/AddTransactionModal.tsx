@@ -9,22 +9,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Banknote, Smartphone, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
-import { TransactionType, TransactionCategory } from '@/lib/types';
+import { TransactionFormData, TransactionType, TransactionCategory } from '@/lib/types';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
 interface AddTransactionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: TransactionFormData) => void;
+  onSubmit: (data: TransactionFormData) => Promise<void> | void;
   goalName: string;
-}
-
-export interface TransactionFormData {
-  amount: number;
-  type: TransactionType;
-  category: TransactionCategory;
-  description: string;
 }
 
 export const AddTransactionModal = ({
@@ -33,6 +26,7 @@ export const AddTransactionModal = ({
   onSubmit,
   goalName,
 }: AddTransactionModalProps) => {
+  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState<TransactionFormData>({
     amount: 0,
     type: 'pix',
@@ -40,7 +34,7 @@ export const AddTransactionModal = ({
     description: '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (formData.amount <= 0) {
@@ -48,19 +42,26 @@ export const AddTransactionModal = ({
       return;
     }
 
-    onSubmit(formData);
-    setFormData({
-      amount: 0,
-      type: 'pix',
-      category: 'entrada',
-      description: '',
-    });
-    onClose();
-    toast.success(
-      formData.category === 'entrada'
-        ? 'Entrada registrada com sucesso!'
-        : 'Saída registrada com sucesso!'
-    );
+    setSubmitting(true);
+    try {
+      await onSubmit(formData);
+      setFormData({
+        amount: 0,
+        type: 'pix',
+        category: 'entrada',
+        description: '',
+      });
+      onClose();
+      toast.success(
+        formData.category === 'entrada'
+          ? 'Entrada registrada com sucesso!'
+          : 'Saída registrada com sucesso!'
+      );
+    } catch (error) {
+      toast.error('Não foi possível registrar a transação');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -199,6 +200,7 @@ export const AddTransactionModal = ({
               variant="outline"
               onClick={onClose}
               className="flex-1"
+              disabled={submitting}
             >
               Cancelar
             </Button>
@@ -206,6 +208,7 @@ export const AddTransactionModal = ({
               type="submit"
               variant={formData.category === 'entrada' ? 'success' : 'destructive'}
               className="flex-1"
+              disabled={submitting}
             >
               Registrar
             </Button>

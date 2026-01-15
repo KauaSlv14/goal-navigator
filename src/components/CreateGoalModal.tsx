@@ -10,22 +10,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Target, Link, Calendar, Shield, Banknote, Smartphone, ImageIcon, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { GoalFormData } from '@/lib/types';
 
 interface CreateGoalModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: GoalFormData) => void;
-}
-
-export interface GoalFormData {
-  name: string;
-  targetAmount: number;
-  initialCash: number;
-  initialPix: number;
-  productLink: string;
-  imageUrl: string;
-  targetDate: string;
-  safetyMargin: number;
+  onSubmit: (data: GoalFormData) => Promise<void> | void;
 }
 
 export const CreateGoalModal = ({
@@ -34,6 +24,7 @@ export const CreateGoalModal = ({
   onSubmit,
 }: CreateGoalModalProps) => {
   const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [imageInputKey, setImageInputKey] = useState(0);
   const [uploadedImageName, setUploadedImageName] = useState('');
   const [formData, setFormData] = useState<GoalFormData>({
@@ -103,7 +94,7 @@ export const CreateGoalModal = ({
     }, 1500);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.name.trim()) {
@@ -116,21 +107,28 @@ export const CreateGoalModal = ({
       return;
     }
 
-    onSubmit(formData);
-    setFormData({
-      name: '',
-      targetAmount: 0,
-      initialCash: 0,
-      initialPix: 0,
-      productLink: '',
-      imageUrl: '',
-      targetDate: '',
-      safetyMargin: 10,
-    });
-    setUploadedImageName('');
-    setImageInputKey((prev) => prev + 1);
-    onClose();
-    toast.success('Meta criada com sucesso!');
+    setSubmitting(true);
+    try {
+      await onSubmit(formData);
+      setFormData({
+        name: '',
+        targetAmount: 0,
+        initialCash: 0,
+        initialPix: 0,
+        productLink: '',
+        imageUrl: '',
+        targetDate: '',
+        safetyMargin: 10,
+      });
+      setUploadedImageName('');
+      setImageInputKey((prev) => prev + 1);
+      onClose();
+      toast.success('Meta criada com sucesso!');
+    } catch (error) {
+      toast.error('Não foi possível criar a meta');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -336,10 +334,11 @@ export const CreateGoalModal = ({
               variant="outline"
               onClick={onClose}
               className="flex-1"
+              disabled={submitting}
             >
               Cancelar
             </Button>
-            <Button type="submit" variant="gradient" className="flex-1">
+            <Button type="submit" variant="gradient" className="flex-1" disabled={submitting}>
               Criar Meta
             </Button>
           </div>

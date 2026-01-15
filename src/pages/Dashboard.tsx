@@ -1,29 +1,41 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { GoalCard } from '@/components/GoalCard';
-import { CreateGoalModal, GoalFormData } from '@/components/CreateGoalModal';
+import { CreateGoalModal } from '@/components/CreateGoalModal';
 import { CelebrationModal } from '@/components/CelebrationModal';
-import { getAllGoalsWithProgress, addGoal } from '@/lib/mockData';
-import { formatCurrency, GoalWithProgress } from '@/lib/types';
-import {
-  Target,
-  Plus,
-  Wallet,
-  Banknote,
-  Smartphone,
-  LogOut,
-  User,
-} from 'lucide-react';
+import { formatCurrency, GoalFormData, GoalWithProgress } from '@/lib/types';
+import { Target, Plus, Wallet, Banknote, Smartphone, LogOut, User } from 'lucide-react';
 import { toast } from 'sonner';
+import { createGoal, getGoals } from '@/lib/api';
 
 export const Dashboard = () => {
   const navigate = useNavigate();
-  const [goals, setGoals] = useState<GoalWithProgress[]>(getAllGoalsWithProgress());
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [celebrationGoal, setCelebrationGoal] = useState<GoalWithProgress | null>(null);
+  const queryClient = useQueryClient();
 
-  // Calculate totals
+  const { data: goals = [], isLoading } = useQuery({
+    queryKey: ['goals'],
+    queryFn: getGoals,
+  });
+
+  const createGoalMutation = useMutation({
+    mutationFn: createGoal,
+    onSuccess: (newGoal) => {
+      queryClient.setQueryData(['goals'], (old?: GoalWithProgress[]) =>
+        old ? [newGoal, ...old] : [newGoal]
+      );
+      if (newGoal.isCompleted) {
+        setTimeout(() => setCelebrationGoal(newGoal), 500);
+      }
+    },
+    onError: (err: any) => {
+      toast.error(err?.message ?? 'Não foi possível criar a meta');
+    },
+  });
+
   const totalCash = goals.reduce((sum, g) => sum + g.currentCash, 0);
   const totalPix = goals.reduce((sum, g) => sum + g.currentPix, 0);
   const totalBalance = totalCash + totalPix;
@@ -35,52 +47,8 @@ export const Dashboard = () => {
     navigate(`/goal/${goal.id}`);
   };
 
-  const handleCreateGoal = (data: GoalFormData) => {
-    const totalCurrent = data.initialCash + data.initialPix;
-    const percentage = (totalCurrent / data.targetAmount) * 100;
-    const isCompleted = percentage >= 100;
-
-    const newGoal: GoalWithProgress = {
-      id: `goal-${Date.now()}`,
-      userId: 'user1',
-      name: data.name,
-      targetAmount: data.targetAmount,
-      currentCash: data.initialCash,
-      currentPix: data.initialPix,
-      imageUrl: data.imageUrl,
-      productLink: data.productLink,
-      targetDate: data.targetDate ? new Date(data.targetDate) : undefined,
-      safetyMargin: data.safetyMargin,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      isCompleted,
-      totalCurrent,
-      percentage,
-      transactions: [],
-      recurringPayments: [],
-    };
-
-    setGoals((prev) => [newGoal, ...prev]);
-    addGoal({
-      id: newGoal.id,
-      userId: newGoal.userId,
-      name: newGoal.name,
-      targetAmount: newGoal.targetAmount,
-      currentCash: newGoal.currentCash,
-      currentPix: newGoal.currentPix,
-      imageUrl: newGoal.imageUrl,
-      productLink: newGoal.productLink,
-      targetDate: newGoal.targetDate,
-      safetyMargin: newGoal.safetyMargin,
-      createdAt: newGoal.createdAt,
-      updatedAt: newGoal.updatedAt,
-      isCompleted: newGoal.isCompleted,
-    });
-
-    // Check if goal is immediately completed
-    if (newGoal.isCompleted) {
-      setTimeout(() => setCelebrationGoal(newGoal), 500);
-    }
+  const handleCreateGoal = async (data: GoalFormData) => {
+    await createGoalMutation.mutateAsync(data);
   };
 
   const handleLogout = () => {
@@ -162,7 +130,11 @@ export const Dashboard = () => {
             </Button>
           </div>
 
-          {activeGoals.length > 0 ? (
+          {isLoading ? (
+            <div className="card-elevated p-6 text-center text-muted-foreground">
+              Carregando metas...
+            </div>
+          ) : activeGoals.length > 0 ? (
             <div className="space-y-4">
               {activeGoals.map((goal, index) => (
                 <GoalCard
@@ -180,10 +152,7 @@ export const Dashboard = () => {
               <p className="text-sm text-muted-foreground mb-4">
                 Crie sua primeira meta e comece a acompanhar seu progresso!
               </p>
-              <Button
-                variant="gradient"
-                onClick={() => setIsCreateModalOpen(true)}
-              >
+              <Button variant="gradient" onClick={() => setIsCreateModalOpen(true)}>
                 <Plus className="w-4 h-4 mr-2" />
                 Criar Primeira Meta
               </Button>
@@ -195,7 +164,7 @@ export const Dashboard = () => {
         {completedGoals.length > 0 && (
           <div className="animate-fade-in-up" style={{ animationDelay: '200ms' }}>
             <h2 className="font-bold text-foreground text-lg mb-4">
-              Metas Concluídas 🎉 ({completedGoals.length})
+              Metas Concluídas ({completedGoals.length})
             </h2>
             <div className="space-y-4">
               {completedGoals.map((goal, index) => (
