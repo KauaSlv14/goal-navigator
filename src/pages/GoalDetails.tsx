@@ -14,6 +14,7 @@ import {
   calculateForecast,
   formatCurrency,
   formatDate,
+  UserSession,
 } from '@/lib/types';
 import {
   ArrowLeft,
@@ -38,16 +39,24 @@ export const GoalDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const storedUser = localStorage.getItem('user');
+  const user: UserSession | null = storedUser ? JSON.parse(storedUser) : null;
 
   const [goal, setGoal] = useState<GoalWithProgress | null>(null);
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
   const [isRecurringModalOpen, setIsRecurringModalOpen] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
 
+  useEffect(() => {
+    if (!user?.email) {
+      navigate('/auth');
+    }
+  }, [user?.email, navigate]);
+
   const goalQuery = useQuery({
-    queryKey: ['goal', id],
-    queryFn: () => getGoalDetails(id!),
-    enabled: !!id,
+    queryKey: ['goal', id, user?.email],
+    queryFn: () => getGoalDetails(id!, user as UserSession),
+    enabled: !!id && !!user?.email,
     retry: false,
     onSuccess: (data) => setGoal(data),
     onError: () => {
@@ -57,12 +66,12 @@ export const GoalDetails = () => {
   });
 
   const transactionMutation = useMutation({
-    mutationFn: (payload: TransactionFormData) => createTransaction(id!, payload),
+    mutationFn: (payload: TransactionFormData) => createTransaction(id!, payload, user as UserSession),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['goal', id] });
+      await queryClient.invalidateQueries({ queryKey: ['goal', id, user?.email] });
       const updated = await queryClient.fetchQuery({
-        queryKey: ['goal', id],
-        queryFn: () => getGoalDetails(id!),
+        queryKey: ['goal', id, user?.email],
+        queryFn: () => getGoalDetails(id!, user as UserSession),
       });
       setGoal(updated);
       if (!goal?.isCompleted && updated.isCompleted) {
@@ -73,12 +82,12 @@ export const GoalDetails = () => {
   });
 
   const recurringMutation = useMutation({
-    mutationFn: (payload: RecurringFormData) => createRecurringPayment(id!, payload),
+    mutationFn: (payload: RecurringFormData) => createRecurringPayment(id!, payload, user as UserSession),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['goal', id] });
+      await queryClient.invalidateQueries({ queryKey: ['goal', id, user?.email] });
       const updated = await queryClient.fetchQuery({
-        queryKey: ['goal', id],
-        queryFn: () => getGoalDetails(id!),
+        queryKey: ['goal', id, user?.email],
+        queryFn: () => getGoalDetails(id!, user as UserSession),
       });
       setGoal(updated);
       toast.success('Recorrência criada!');
@@ -93,9 +102,9 @@ export const GoalDetails = () => {
   }, [goalQuery.data]);
 
   const deleteGoalMutation = useMutation({
-    mutationFn: () => deleteGoalApi(id!),
+    mutationFn: () => deleteGoalApi(id!, user as UserSession),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['goals'] });
+      await queryClient.invalidateQueries({ queryKey: ['goals', user?.email] });
       toast.success('Meta excluída com sucesso');
       navigate('/dashboard');
     },

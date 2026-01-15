@@ -1,6 +1,6 @@
 import { prisma } from '../db';
 import { decimalToNumber, calculateGoalProgress } from '../utils/format';
-import { ensureDefaultUser } from './userService';
+import { ensureUser } from './userService';
 import { TransactionType, TransactionCategory, RecurrenceFrequency } from '../../generated/prisma';
 
 type TransactionInput = {
@@ -11,6 +11,8 @@ type TransactionInput = {
 };
 
 type CreateGoalInput = {
+  userEmail: string;
+  userName?: string;
   name: string;
   targetAmount: number;
   initialCash: number;
@@ -21,8 +23,11 @@ type CreateGoalInput = {
   safetyMargin?: number;
 };
 
-export const getGoalsWithProgress = async () => {
+export const getGoalsWithProgress = async (userEmail: string, userName?: string) => {
+  const user = await ensureUser(userEmail, userName);
+
   const goals = await prisma.goal.findMany({
+    where: { userId: user.id },
     include: { transactions: true, recurringPayments: true },
     orderBy: { createdAt: 'desc' },
   });
@@ -31,7 +36,7 @@ export const getGoalsWithProgress = async () => {
 };
 
 export const createGoal = async (data: CreateGoalInput) => {
-  const user = await ensureDefaultUser();
+  const user = await ensureUser(data.userEmail, data.userName);
 
   const goal = await prisma.goal.create({
     data: {
@@ -55,9 +60,10 @@ export const createGoal = async (data: CreateGoalInput) => {
   return fullGoal ? mapGoalWithProgress(fullGoal) : null;
 };
 
-export const getGoalById = async (id: string) => {
-  const goal = await prisma.goal.findUnique({
-    where: { id },
+export const getGoalById = async (id: string, userEmail: string, userName?: string) => {
+  const user = await ensureUser(userEmail, userName);
+  const goal = await prisma.goal.findFirst({
+    where: { id, userId: user.id },
     include: { transactions: true, recurringPayments: true },
   });
 
@@ -65,8 +71,9 @@ export const getGoalById = async (id: string) => {
   return mapGoalWithProgress(goal);
 };
 
-export const addTransactionToGoal = async (goalId: string, data: TransactionInput) => {
-  const goalExists = await prisma.goal.findUnique({ where: { id: goalId } });
+export const addTransactionToGoal = async (goalId: string, userEmail: string, data: TransactionInput, userName?: string) => {
+  const user = await ensureUser(userEmail, userName);
+  const goalExists = await prisma.goal.findFirst({ where: { id: goalId, userId: user.id } });
   if (!goalExists) return null;
 
   const transaction = await prisma.transaction.create({
@@ -85,6 +92,8 @@ export const addTransactionToGoal = async (goalId: string, data: TransactionInpu
 export const addRecurringPaymentToGoal = async (
   goalId: string,
   data: {
+    userEmail: string;
+    userName?: string;
     name: string;
     amount: number;
     type: TransactionType;
@@ -95,7 +104,8 @@ export const addRecurringPaymentToGoal = async (
     startsAt?: string;
   }
 ) => {
-  const goalExists = await prisma.goal.findUnique({ where: { id: goalId } });
+  const user = await ensureUser(data.userEmail, data.userName);
+  const goalExists = await prisma.goal.findFirst({ where: { id: goalId, userId: user.id } });
   if (!goalExists) return null;
 
   const nextRunAt = data.startsAt
@@ -121,8 +131,9 @@ export const addRecurringPaymentToGoal = async (
   });
 };
 
-export const deleteGoal = async (goalId: string) => {
-  const goalExists = await prisma.goal.findUnique({ where: { id: goalId } });
+export const deleteGoal = async (goalId: string, userEmail: string, userName?: string) => {
+  const user = await ensureUser(userEmail, userName);
+  const goalExists = await prisma.goal.findFirst({ where: { id: goalId, userId: user.id } });
   if (!goalExists) return false;
 
   await prisma.$transaction([

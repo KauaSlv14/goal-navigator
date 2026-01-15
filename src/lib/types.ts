@@ -85,6 +85,11 @@ export interface User {
   name: string;
 }
 
+export interface UserSession {
+  email: string;
+  name?: string;
+}
+
 export interface Forecast {
   optimistic: number;
   probable: number;

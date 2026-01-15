@@ -12,13 +12,24 @@ import {
 import { processDueRecurrences } from '../services/recurringService';
 
 export const goalsRoutes = async (app: FastifyInstance) => {
-  app.get('/', async () => {
-    const goals = await getGoalsWithProgress();
+  app.get('/', async (request, reply) => {
+    const querySchema = z.object({
+      userEmail: z.string().email(),
+      userName: z.string().optional(),
+    });
+    const parsed = querySchema.safeParse(request.query);
+    if (!parsed.success) {
+      return reply.code(400).send({ error: 'Informe userEmail' });
+    }
+
+    const goals = await getGoalsWithProgress(parsed.data.userEmail, parsed.data.userName);
     return goals;
   });
 
   app.post('/', async (request, reply) => {
     const schema = z.object({
+      userEmail: z.string().email(),
+      userName: z.string().optional(),
       name: z.string().min(1),
       targetAmount: z.number().positive(),
       initialCash: z.number().min(0),
@@ -39,8 +50,17 @@ export const goalsRoutes = async (app: FastifyInstance) => {
   });
 
   app.get('/:id', async (request, reply) => {
-    const { id } = z.object({ id: z.string().min(1) }).parse(request.params);
-    const goal = await getGoalById(id);
+    const params = z.object({ id: z.string().min(1) }).parse(request.params);
+    const querySchema = z.object({
+      userEmail: z.string().email(),
+      userName: z.string().optional(),
+    });
+    const parsedQuery = querySchema.safeParse(request.query);
+    if (!parsedQuery.success) {
+      return reply.code(400).send({ error: 'Informe userEmail' });
+    }
+
+    const goal = await getGoalById(params.id, parsedQuery.data.userEmail, parsedQuery.data.userName);
     if (!goal) return reply.code(404).send({ error: 'Meta não encontrada' });
     return goal;
   });
@@ -48,6 +68,8 @@ export const goalsRoutes = async (app: FastifyInstance) => {
   app.post('/:id/transactions', async (request, reply) => {
     const params = z.object({ id: z.string().min(1) }).parse(request.params);
     const schema = z.object({
+      userEmail: z.string().email(),
+      userName: z.string().optional(),
       amount: z.number().positive(),
       type: z.enum(['cash', 'pix']),
       category: z.enum(['entrada', 'saida']),
@@ -58,7 +80,7 @@ export const goalsRoutes = async (app: FastifyInstance) => {
       return reply.code(400).send({ error: 'Dados inválidos', details: parsed.error.flatten() });
     }
 
-    const tx = await addTransactionToGoal(params.id, parsed.data);
+    const tx = await addTransactionToGoal(params.id, parsed.data.userEmail, parsed.data, parsed.data.userName);
     if (!tx) return reply.code(404).send({ error: 'Meta não encontrada' });
     return tx;
   });
@@ -66,6 +88,8 @@ export const goalsRoutes = async (app: FastifyInstance) => {
   app.post('/:id/recurring', async (request, reply) => {
     const params = z.object({ id: z.string().min(1) }).parse(request.params);
     const schema = z.object({
+      userEmail: z.string().email(),
+      userName: z.string().optional(),
       name: z.string().min(1),
       amount: z.number().positive(),
       type: z.enum(['cash', 'pix']),
@@ -88,7 +112,16 @@ export const goalsRoutes = async (app: FastifyInstance) => {
 
   app.delete('/:id', async (request, reply) => {
     const { id } = z.object({ id: z.string().min(1) }).parse(request.params);
-    const deleted = await deleteGoal(id);
+    const querySchema = z.object({
+      userEmail: z.string().email(),
+      userName: z.string().optional(),
+    });
+    const parsedQuery = querySchema.safeParse(request.query);
+    if (!parsedQuery.success) {
+      return reply.code(400).send({ error: 'Informe userEmail' });
+    }
+
+    const deleted = await deleteGoal(id, parsedQuery.data.userEmail, parsedQuery.data.userName);
     if (!deleted) return reply.code(404).send({ error: 'Meta não encontrada' });
     return { ok: true };
   });

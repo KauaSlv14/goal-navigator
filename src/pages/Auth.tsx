@@ -61,14 +61,16 @@ export const Auth = () => {
       if (mode === 'forgot') {
         toast.success('E-mail de recuperação enviado! Verifique sua caixa de entrada.');
         setMode('login');
-      } else if (mode === 'register') {
-        toast.success('Conta criada com sucesso! Verifique seu e-mail para confirmar.');
-        setMode('login');
       } else {
-        toast.success('Login realizado com sucesso!');
+        const userPayload = {
+          email: formData.email,
+          name: formData.name || formData.email.split('@')[0],
+        };
+        localStorage.setItem('user', JSON.stringify(userPayload));
+        toast.success(mode === 'register' ? 'Conta criada com sucesso!' : 'Login realizado com sucesso!');
         navigate('/dashboard');
       }
-    }, 1500);
+    }, 500);
   };
 
   const renderTitle = () => {

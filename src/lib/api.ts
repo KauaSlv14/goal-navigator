@@ -4,6 +4,7 @@ import {
   RecurringPayment,
   TransactionFormData,
   GoalFormData,
+  UserSession,
 } from './types';
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3333';
@@ -108,17 +109,23 @@ const mapGoal = (goal: ApiGoal): GoalWithProgress => ({
   recurringPayments: goal.recurringPayments?.map(mapRecurring) ?? [],
 });
 
-export const getGoals = async (): Promise<GoalWithProgress[]> => {
-  const res = await fetch(`${API_URL}/api/goals`);
+export const getGoals = async (user: UserSession): Promise<GoalWithProgress[]> => {
+  const params = new URLSearchParams({
+    userEmail: user.email,
+  });
+  if (user.name) params.set('userName', user.name);
+  const res = await fetch(`${API_URL}/api/goals?${params.toString()}`);
   const data: ApiGoal[] = await handleResponse(res);
   return data.map(mapGoal);
 };
 
-export const createGoal = async (payload: GoalFormData): Promise<GoalWithProgress> => {
+export const createGoal = async (payload: GoalFormData, user: UserSession): Promise<GoalWithProgress> => {
   const res = await fetch(`${API_URL}/api/goals`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
+      userEmail: user.email,
+      userName: user.name,
       ...payload,
       productLink: payload.productLink || undefined,
       imageUrl: payload.imageUrl || undefined,
@@ -129,26 +136,38 @@ export const createGoal = async (payload: GoalFormData): Promise<GoalWithProgres
   return mapGoal(data);
 };
 
-export const getGoalDetails = async (id: string): Promise<GoalWithProgress> => {
-  const res = await fetch(`${API_URL}/api/goals/${id}`);
+export const getGoalDetails = async (id: string, user: UserSession): Promise<GoalWithProgress> => {
+  const params = new URLSearchParams({
+    userEmail: user.email,
+  });
+  if (user.name) params.set('userName', user.name);
+  const res = await fetch(`${API_URL}/api/goals/${id}?${params.toString()}`);
   const data: ApiGoal = await handleResponse(res);
   return mapGoal(data);
 };
 
-export const createTransaction = async (goalId: string, payload: TransactionFormData) => {
+export const createTransaction = async (goalId: string, payload: TransactionFormData, user: UserSession) => {
   const res = await fetch(`${API_URL}/api/goals/${goalId}/transactions`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      userEmail: user.email,
+      userName: user.name,
+      ...payload,
+    }),
   });
   await handleResponse(res);
 };
 
-export const createRecurringPayment = async (goalId: string, payload: RecurringFormData) => {
+export const createRecurringPayment = async (goalId: string, payload: RecurringFormData, user: UserSession) => {
   const res = await fetch(`${API_URL}/api/goals/${goalId}/recurring`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      userEmail: user.email,
+      userName: user.name,
+      ...payload,
+    }),
   });
   await handleResponse(res);
 };
@@ -158,7 +177,11 @@ export const runRecurringNow = async () => {
   return handleResponse(res);
 };
 
-export const deleteGoal = async (goalId: string) => {
-  const res = await fetch(`${API_URL}/api/goals/${goalId}`, { method: 'DELETE' });
+export const deleteGoal = async (goalId: string, user: UserSession) => {
+  const params = new URLSearchParams({
+    userEmail: user.email,
+  });
+  if (user.name) params.set('userName', user.name);
+  const res = await fetch(`${API_URL}/api/goals/${goalId}?${params.toString()}`, { method: 'DELETE' });
   await handleResponse(res);
 };

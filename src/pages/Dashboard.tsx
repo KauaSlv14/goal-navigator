@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { GoalCard } from '@/components/GoalCard';
 import { CreateGoalModal } from '@/components/CreateGoalModal';
 import { CelebrationModal } from '@/components/CelebrationModal';
-import { formatCurrency, GoalFormData, GoalWithProgress } from '@/lib/types';
+import { formatCurrency, GoalFormData, GoalWithProgress, UserSession } from '@/lib/types';
 import { Target, Plus, Wallet, Banknote, Smartphone, LogOut, User } from 'lucide-react';
 import { toast } from 'sonner';
 import { createGoal, getGoals } from '@/lib/api';
@@ -15,16 +15,25 @@ export const Dashboard = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [celebrationGoal, setCelebrationGoal] = useState<GoalWithProgress | null>(null);
   const queryClient = useQueryClient();
+  const storedUser = localStorage.getItem('user');
+  const user: UserSession | null = storedUser ? JSON.parse(storedUser) : null;
+
+  useEffect(() => {
+    if (!user?.email) {
+      navigate('/auth');
+    }
+  }, [user?.email, navigate]);
 
   const { data: goals = [], isLoading } = useQuery({
-    queryKey: ['goals'],
-    queryFn: getGoals,
+    queryKey: ['goals', user?.email],
+    queryFn: () => getGoals(user as UserSession),
+    enabled: !!user?.email,
   });
 
   const createGoalMutation = useMutation({
-    mutationFn: createGoal,
+    mutationFn: (data: GoalFormData) => createGoal(data, user as UserSession),
     onSuccess: (newGoal) => {
-      queryClient.setQueryData(['goals'], (old?: GoalWithProgress[]) =>
+      queryClient.setQueryData(['goals', user?.email], (old?: GoalWithProgress[]) =>
         old ? [newGoal, ...old] : [newGoal]
       );
       if (newGoal.isCompleted) {
@@ -48,6 +57,10 @@ export const Dashboard = () => {
   };
 
   const handleCreateGoal = async (data: GoalFormData) => {
+    if (!user?.email) {
+      toast.error('Faça login para criar metas');
+      return;
+    }
     await createGoalMutation.mutateAsync(data);
   };
 
