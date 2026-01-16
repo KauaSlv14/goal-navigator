@@ -65,6 +65,7 @@ export const Dashboard = () => {
   };
 
   const handleLogout = () => {
+    localStorage.removeItem('user');
     toast.success('Até logo!');
     navigate('/');
   };

@@ -124,8 +124,9 @@ export const CreateGoalModal = ({
       setImageInputKey((prev) => prev + 1);
       onClose();
       toast.success('Meta criada com sucesso!');
-    } catch (error) {
-      toast.error('Não foi possível criar a meta');
+    } catch (error: any) {
+      const message = error?.message || 'Não foi possível criar a meta';
+      toast.error(message);
     } finally {
       setSubmitting(false);
     }
