@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Target, Mail, Lock, User, ArrowLeft, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import { login, register } from '@/lib/api';
 
 type AuthMode = 'login' | 'register' | 'forgot';
 
@@ -53,24 +54,46 @@ export const Auth = () => {
         setLoading(false);
         return;
       }
+    } else if (mode === 'login' && !formData.password) {
+      toast.error('Digite sua senha');
+      setLoading(false);
+      return;
     }
 
-    // Mock authentication - replace with real auth when backend is connected
-    setTimeout(() => {
-      setLoading(false);
+    try {
       if (mode === 'forgot') {
-        toast.success('E-mail de recuperação enviado! Verifique sua caixa de entrada.');
+        toast.info('Fluxo de recuperação ainda não implementado.');
         setMode('login');
-      } else {
-        const userPayload = {
+      } else if (mode === 'register') {
+        const response = await register({
           email: formData.email,
+          password: formData.password,
           name: formData.name || formData.email.split('@')[0],
-        };
-        localStorage.setItem('user', JSON.stringify(userPayload));
-        toast.success(mode === 'register' ? 'Conta criada com sucesso!' : 'Login realizado com sucesso!');
+        });
+        localStorage.setItem(
+          'user',
+          JSON.stringify({ email: response.user.email, name: response.user.name, token: response.token })
+        );
+        toast.success('Conta criada com sucesso!');
+        navigate('/dashboard');
+      } else {
+        const response = await login({
+          email: formData.email,
+          password: formData.password,
+        });
+        localStorage.setItem(
+          'user',
+          JSON.stringify({ email: response.user.email, name: response.user.name, token: response.token })
+        );
+        toast.success('Login realizado com sucesso!');
         navigate('/dashboard');
       }
-    }, 500);
+    } catch (err: any) {
+      const message = err?.message || 'Falha na autenticação';
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const renderTitle = () => {

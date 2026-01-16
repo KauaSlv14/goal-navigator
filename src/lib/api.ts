@@ -5,6 +5,8 @@ import {
   TransactionFormData,
   GoalFormData,
   UserSession,
+  AuthResponse,
+  AuthCredentials,
 } from './types';
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3333';
@@ -109,12 +111,36 @@ const mapGoal = (goal: ApiGoal): GoalWithProgress => ({
   recurringPayments: goal.recurringPayments?.map(mapRecurring) ?? [],
 });
 
-export const getGoals = async (user: UserSession): Promise<GoalWithProgress[]> => {
-  const params = new URLSearchParams({
-    userEmail: user.email,
+const authHeaders = (token?: string) =>
+  token
+    ? {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      }
+    : { 'Content-Type': 'application/json' };
+
+export const register = async (data: AuthCredentials): Promise<AuthResponse> => {
+  const res = await fetch(`${API_URL}/api/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
   });
-  if (user.name) params.set('userName', user.name);
-  const res = await fetch(`${API_URL}/api/goals?${params.toString()}`);
+  return handleResponse(res);
+};
+
+export const login = async (data: AuthCredentials): Promise<AuthResponse> => {
+  const res = await fetch(`${API_URL}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return handleResponse(res);
+};
+
+export const getGoals = async (user: UserSession): Promise<GoalWithProgress[]> => {
+  const res = await fetch(`${API_URL}/api/goals`, {
+    headers: authHeaders(user.token),
+  });
   const data: ApiGoal[] = await handleResponse(res);
   return data.map(mapGoal);
 };
@@ -122,10 +148,8 @@ export const getGoals = async (user: UserSession): Promise<GoalWithProgress[]> =
 export const createGoal = async (payload: GoalFormData, user: UserSession): Promise<GoalWithProgress> => {
   const res = await fetch(`${API_URL}/api/goals`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders(user.token),
     body: JSON.stringify({
-      userEmail: user.email,
-      userName: user.name,
       ...payload,
       productLink: payload.productLink || undefined,
       imageUrl: payload.imageUrl || undefined,
@@ -137,11 +161,9 @@ export const createGoal = async (payload: GoalFormData, user: UserSession): Prom
 };
 
 export const getGoalDetails = async (id: string, user: UserSession): Promise<GoalWithProgress> => {
-  const params = new URLSearchParams({
-    userEmail: user.email,
+  const res = await fetch(`${API_URL}/api/goals/${id}`, {
+    headers: authHeaders(user.token),
   });
-  if (user.name) params.set('userName', user.name);
-  const res = await fetch(`${API_URL}/api/goals/${id}?${params.toString()}`);
   const data: ApiGoal = await handleResponse(res);
   return mapGoal(data);
 };
@@ -149,12 +171,8 @@ export const getGoalDetails = async (id: string, user: UserSession): Promise<Goa
 export const createTransaction = async (goalId: string, payload: TransactionFormData, user: UserSession) => {
   const res = await fetch(`${API_URL}/api/goals/${goalId}/transactions`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      userEmail: user.email,
-      userName: user.name,
-      ...payload,
-    }),
+    headers: authHeaders(user.token),
+    body: JSON.stringify(payload),
   });
   await handleResponse(res);
 };
@@ -162,12 +180,8 @@ export const createTransaction = async (goalId: string, payload: TransactionForm
 export const createRecurringPayment = async (goalId: string, payload: RecurringFormData, user: UserSession) => {
   const res = await fetch(`${API_URL}/api/goals/${goalId}/recurring`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      userEmail: user.email,
-      userName: user.name,
-      ...payload,
-    }),
+    headers: authHeaders(user.token),
+    body: JSON.stringify(payload),
   });
   await handleResponse(res);
 };
@@ -178,10 +192,9 @@ export const runRecurringNow = async () => {
 };
 
 export const deleteGoal = async (goalId: string, user: UserSession) => {
-  const params = new URLSearchParams({
-    userEmail: user.email,
+  const res = await fetch(`${API_URL}/api/goals/${goalId}`, {
+    method: 'DELETE',
+    headers: authHeaders(user.token),
   });
-  if (user.name) params.set('userName', user.name);
-  const res = await fetch(`${API_URL}/api/goals/${goalId}?${params.toString()}`, { method: 'DELETE' });
   await handleResponse(res);
 };

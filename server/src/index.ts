@@ -2,6 +2,7 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import { goalsRoutes } from './routes/goals';
 import { recurringRoutes } from './routes/recurring';
+import { authRoutes } from './routes/auth';
 import { env } from './env';
 import { registerRecurrenceJob } from './jobs/recurrenceJob';
 
@@ -14,6 +15,7 @@ const buildServer = () => {
     origin: env.corsOrigin === '*' ? true : env.corsOrigin,
   });
 
+  app.register(authRoutes, { prefix: '/api/auth' });
   app.register(goalsRoutes, { prefix: '/api/goals' });
   app.register(recurringRoutes, { prefix: '/api/recurring' });
 

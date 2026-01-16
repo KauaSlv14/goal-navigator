@@ -25,6 +25,7 @@ type CreateGoalInput = {
 
 export const getGoalsWithProgress = async (userEmail: string, userName?: string) => {
   const user = await ensureUser(userEmail, userName);
+  if (!user) throw new Error('USER_NOT_FOUND');
 
   const goals = await prisma.goal.findMany({
     where: { userId: user.id },
@@ -37,6 +38,7 @@ export const getGoalsWithProgress = async (userEmail: string, userName?: string)
 
 export const createGoal = async (data: CreateGoalInput) => {
   const user = await ensureUser(data.userEmail, data.userName);
+  if (!user) throw new Error('USER_NOT_FOUND');
 
   const goal = await prisma.goal.create({
     data: {
@@ -62,6 +64,7 @@ export const createGoal = async (data: CreateGoalInput) => {
 
 export const getGoalById = async (id: string, userEmail: string, userName?: string) => {
   const user = await ensureUser(userEmail, userName);
+  if (!user) throw new Error('USER_NOT_FOUND');
   const goal = await prisma.goal.findFirst({
     where: { id, userId: user.id },
     include: { transactions: true, recurringPayments: true },
@@ -73,6 +76,7 @@ export const getGoalById = async (id: string, userEmail: string, userName?: stri
 
 export const addTransactionToGoal = async (goalId: string, userEmail: string, data: TransactionInput, userName?: string) => {
   const user = await ensureUser(userEmail, userName);
+  if (!user) throw new Error('USER_NOT_FOUND');
   const goalExists = await prisma.goal.findFirst({ where: { id: goalId, userId: user.id } });
   if (!goalExists) return null;
 
@@ -105,6 +109,7 @@ export const addRecurringPaymentToGoal = async (
   }
 ) => {
   const user = await ensureUser(data.userEmail, data.userName);
+  if (!user) throw new Error('USER_NOT_FOUND');
   const goalExists = await prisma.goal.findFirst({ where: { id: goalId, userId: user.id } });
   if (!goalExists) return null;
 
@@ -133,6 +138,7 @@ export const addRecurringPaymentToGoal = async (
 
 export const deleteGoal = async (goalId: string, userEmail: string, userName?: string) => {
   const user = await ensureUser(userEmail, userName);
+  if (!user) throw new Error('USER_NOT_FOUND');
   const goalExists = await prisma.goal.findFirst({ where: { id: goalId, userId: user.id } });
   if (!goalExists) return false;
 

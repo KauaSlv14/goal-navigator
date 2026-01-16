@@ -6,11 +6,5 @@ export const ensureUser = async (email: string, name?: string) => {
   });
 
   if (existing) return existing;
-
-  return prisma.user.create({
-    data: {
-      email,
-      name: name || email.split('@')[0] || 'Usuário',
-    },
-  });
+  return null;
 };

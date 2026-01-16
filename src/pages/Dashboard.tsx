@@ -19,15 +19,15 @@ export const Dashboard = () => {
   const user: UserSession | null = storedUser ? JSON.parse(storedUser) : null;
 
   useEffect(() => {
-    if (!user?.email) {
+    if (!user?.email || !user?.token) {
       navigate('/auth');
     }
-  }, [user?.email, navigate]);
+  }, [user?.email, user?.token, navigate]);
 
   const { data: goals = [], isLoading } = useQuery({
     queryKey: ['goals', user?.email],
     queryFn: () => getGoals(user as UserSession),
-    enabled: !!user?.email,
+    enabled: !!user?.email && !!user?.token,
   });
 
   const createGoalMutation = useMutation({
@@ -57,7 +57,7 @@ export const Dashboard = () => {
   };
 
   const handleCreateGoal = async (data: GoalFormData) => {
-    if (!user?.email) {
+    if (!user?.email || !user?.token) {
       toast.error('Faça login para criar metas');
       return;
     }

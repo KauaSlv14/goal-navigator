@@ -1,6 +1,6 @@
 export type TransactionType = 'cash' | 'pix';
 export type TransactionCategory = 'entrada' | 'saida';
-export type RecurrenceFrequency = 'Diario' | 'semanal' | 'mensal' | 'anual';
+export type RecurrenceFrequency = 'diario' | 'semanal' | 'mensal' | 'anual';
 
 export interface Transaction {
   id: string;
@@ -88,6 +88,22 @@ export interface User {
 export interface UserSession {
   email: string;
   name?: string;
+  token: string;
+}
+
+export interface AuthCredentials {
+  email: string;
+  password: string;
+  name?: string;
+}
+
+export interface AuthResponse {
+  token: string;
+  user: {
+    id: string;
+    email: string;
+    name: string;
+  };
 }
 
 export interface Forecast {

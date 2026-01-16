@@ -48,15 +48,15 @@ export const GoalDetails = () => {
   const [showCelebration, setShowCelebration] = useState(false);
 
   useEffect(() => {
-    if (!user?.email) {
+    if (!user?.email || !user?.token) {
       navigate('/auth');
     }
-  }, [user?.email, navigate]);
+  }, [user?.email, user?.token, navigate]);
 
   const goalQuery = useQuery({
     queryKey: ['goal', id, user?.email],
     queryFn: () => getGoalDetails(id!, user as UserSession),
-    enabled: !!id && !!user?.email,
+    enabled: !!id && !!user?.email && !!user?.token,
     retry: false,
     onSuccess: (data) => setGoal(data),
     onError: () => {

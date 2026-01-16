@@ -6,4 +6,5 @@ export const env = {
   corsOrigin: process.env.CORS_ORIGIN ?? '*',
   defaultUserEmail: process.env.DEFAULT_USER_EMAIL ?? 'demo@goal.local',
   defaultUserName: process.env.DEFAULT_USER_NAME ?? 'Usuário Demo',
+  jwtSecret: process.env.JWT_SECRET ?? 'dev-secret',
 };
