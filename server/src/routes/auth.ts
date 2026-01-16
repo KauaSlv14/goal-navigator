@@ -53,8 +53,15 @@ export const authRoutes = async (app: FastifyInstance) => {
       return reply.code(401).send({ error: 'Credenciais inválidas' });
     }
 
+    // Suporte a usuários legados (sem hash bcrypt): no primeiro login, gera hash com a senha informada
     if (!user.passwordHash.startsWith('$2')) {
-      return reply.code(401).send({ error: 'Credenciais inválidas' });
+      const newHash = await bcrypt.hash(parsed.data.password, 10);
+      const updated = await prisma.user.update({
+        where: { id: user.id },
+        data: { passwordHash: newHash },
+      });
+      const token = tokenForUser(updated);
+      return { token, user: { id: updated.id, email: updated.email, name: updated.name } };
     }
 
     const ok = await bcrypt.compare(parsed.data.password, user.passwordHash);
