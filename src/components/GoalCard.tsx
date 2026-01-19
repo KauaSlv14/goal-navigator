@@ -1,7 +1,8 @@
-import { Target, Calendar, ArrowRight, Banknote, Smartphone } from 'lucide-react';
+import { Target, Calendar, ArrowRight, Banknote, Smartphone, MinusCircle } from 'lucide-react';
 import { GoalWithProgress, formatCurrency, formatDate } from '@/lib/types';
 import { ProgressBar } from './ProgressBar';
 import { cn } from '@/lib/utils';
+import { Button } from './ui/button';
 
 interface GoalCardProps {
   goal: GoalWithProgress;
@@ -49,7 +50,23 @@ export const GoalCard = ({ goal, onClick, onAddTransaction, index = 0 }: GoalCar
             <h3 className="font-bold text-foreground truncate text-lg">
               {goal.name}
             </h3>
-            <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all flex-shrink-0" />
+            <div className="flex items-center gap-2">
+              {/* Add Expense Action - Compact */}
+              {onAddTransaction && !goal.isCompleted && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAddTransaction('saida');
+                  }}
+                  className="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium text-destructive hover:bg-destructive/10 border border-destructive/20 transition-colors"
+                  title="Adicionar Despesa"
+                >
+                  <MinusCircle className="w-3.5 h-3.5" />
+                  <span>Despesa</span>
+                </button>
+              )}
+              <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all flex-shrink-0" />
+            </div>
           </div>
 
           {/* Balances */}
@@ -74,37 +91,22 @@ export const GoalCard = ({ goal, onClick, onAddTransaction, index = 0 }: GoalCar
                 de {formatCurrency(goal.targetAmount)}
               </span>
             </div>
+            <ProgressBar
+              percentage={goal.percentage}
+              expensePercentage={goal.expensePercentage}
+              showLabel={false}
+              size="sm"
+            />
           </div>
-          <ProgressBar
-            percentage={goal.percentage}
-            expensePercentage={goal.expensePercentage}
-            showLabel={false}
-            size="sm"
-          />
+
+          {/* Target date */}
+          {goal.targetDate && (
+            <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
+              <Calendar className="w-3.5 h-3.5" />
+              <span>Meta: {formatDate(goal.targetDate)}</span>
+            </div>
+          )}
         </div>
-
-        {/* Target date */}
-        {goal.targetDate && (
-          <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
-            <Calendar className="w-3.5 h-3.5" />
-            <span>Meta: {formatDate(goal.targetDate)}</span>
-          </div>
-        )}
-
-        {/* Actions */}
-        {onAddTransaction && !goal.isCompleted && (
-          <div className="mt-3 flex gap-2">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onAddTransaction('saida');
-              }}
-              className="flex-1 bg-destructive/10 hover:bg-destructive/20 text-destructive text-sm font-medium py-2 rounded-lg transition-colors flex items-center justify-center gap-1.5"
-            >
-              Adicionar Despesa
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );

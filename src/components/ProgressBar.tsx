@@ -36,7 +36,7 @@ export const ProgressBar = ({
       >
         <div
           className={cn(
-            'progress-bar h-full',
+            'progress-bar h-full rounded-none',
             animated && 'animate-progress-fill',
             clampedPercentage >= 100 && 'animate-pulse-glow'
           )}
@@ -45,7 +45,7 @@ export const ProgressBar = ({
         {clampedExpense > 0 && (
           <div
             className={cn(
-              'h-full bg-destructive transition-all duration-700 ease-out',
+              'h-full bg-primary/30 transition-all duration-700 ease-out',
               animated && 'animate-progress-fill'
             )}
             style={{ width: `${clampedExpense}%` }}
