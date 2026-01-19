@@ -67,7 +67,10 @@ export const getGoalById = async (id: string, userEmail: string, userName?: stri
   if (!user) throw new Error('USER_NOT_FOUND');
   const goal = await prisma.goal.findFirst({
     where: { id, userId: user.id },
-    include: { transactions: true, recurringPayments: true },
+    include: {
+      transactions: { orderBy: { createdAt: 'desc' } },
+      recurringPayments: true,
+    },
   });
 
   if (!goal) return null;
@@ -116,10 +119,10 @@ export const addRecurringPaymentToGoal = async (
   const nextRunAt = data.startsAt
     ? new Date(data.startsAt)
     : getNextRunDate({
-        frequency: data.frequency,
-        dayOfMonth: data.dayOfMonth,
-        dayOfWeek: data.dayOfWeek,
-      });
+      frequency: data.frequency,
+      dayOfMonth: data.dayOfMonth,
+      dayOfWeek: data.dayOfWeek,
+    });
 
   return prisma.recurringPayment.create({
     data: {

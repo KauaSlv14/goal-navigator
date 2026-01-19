@@ -5,14 +5,17 @@ import { Button } from '@/components/ui/button';
 import { GoalCard } from '@/components/GoalCard';
 import { CreateGoalModal } from '@/components/CreateGoalModal';
 import { CelebrationModal } from '@/components/CelebrationModal';
-import { formatCurrency, GoalFormData, GoalWithProgress, UserSession } from '@/lib/types';
+import { AddTransactionModal } from '@/components/AddTransactionModal';
+import { createTransaction, createGoal, getGoals } from '@/lib/api';
+import { formatCurrency, GoalFormData, GoalWithProgress, UserSession, TransactionFormData } from '@/lib/types';
 import { Target, Plus, Wallet, Banknote, Smartphone, LogOut, User } from 'lucide-react';
 import { toast } from 'sonner';
-import { createGoal, getGoals } from '@/lib/api';
 
 export const Dashboard = () => {
   const navigate = useNavigate();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
+  const [selectedGoalForTransaction, setSelectedGoalForTransaction] = useState<GoalWithProgress | null>(null);
   const [celebrationGoal, setCelebrationGoal] = useState<GoalWithProgress | null>(null);
   const queryClient = useQueryClient();
   const storedUser = localStorage.getItem('user');
@@ -45,6 +48,44 @@ export const Dashboard = () => {
     },
   });
 
+  const transactionMutation = useMutation({
+    mutationFn: ({ goalId, payload }: { goalId: string; payload: TransactionFormData }) =>
+      createTransaction(goalId, payload, user as UserSession),
+    onSuccess: async (_, variables) => {
+      // Invalidate specific goal query if detailing
+      await queryClient.invalidateQueries({ queryKey: ['goal', variables.goalId, user?.email] });
+      // Invalidate goals list
+      await queryClient.invalidateQueries({ queryKey: ['goals', user?.email] });
+
+      const updatedGoals = await queryClient.fetchQuery({
+        queryKey: ['goals', user?.email],
+        queryFn: () => getGoals(user as UserSession),
+      });
+
+      const updatedGoal = updatedGoals.find(g => g.id === variables.goalId);
+
+      if (updatedGoal && !variables.payload.deductFromTarget && !updatedGoal.isCompleted) {
+        // Logic for completion check if we had reference to old goal state, but simpler:
+        // If it just completed, show celebration.
+        // We don't have old state handy easily here without complexity.
+        // Let's just celebrate if it is completed and we just added income?
+        // Simplification: just close modal.
+      }
+
+      setIsTransactionModalOpen(false);
+      setSelectedGoalForTransaction(null);
+      toast.success(
+        variables.payload.category === 'entrada'
+          ? 'Entrada registrada com sucesso!'
+          : 'Despesa registrada com sucesso!'
+      );
+    },
+    onError: (err: any) => {
+      toast.error(err?.message ?? 'Não foi possível registrar a transação');
+    }
+  });
+
+
   const totalCash = goals.reduce((sum, g) => sum + g.currentCash, 0);
   const totalPix = goals.reduce((sum, g) => sum + g.currentPix, 0);
   const totalBalance = totalCash + totalPix;
@@ -62,6 +103,16 @@ export const Dashboard = () => {
       return;
     }
     await createGoalMutation.mutateAsync(data);
+  };
+
+  const handleAddTransaction = async (data: TransactionFormData) => {
+    if (!selectedGoalForTransaction) return;
+    await transactionMutation.mutateAsync({ goalId: selectedGoalForTransaction.id, payload: data });
+  };
+
+  const openTransactionModal = (goal: GoalWithProgress) => {
+    setSelectedGoalForTransaction(goal);
+    setIsTransactionModalOpen(true);
   };
 
   const handleLogout = () => {
@@ -82,7 +133,7 @@ export const Dashboard = () => {
               </div>
               <div>
                 <h1 className="font-bold text-foreground">Cofre de Metas</h1>
-                <p className="text-xs text-muted-foreground">Olá, Usuário</p>
+                <p className="text-xs text-muted-foreground">Olá, {user?.name || 'Usuário'}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -155,6 +206,7 @@ export const Dashboard = () => {
                   key={goal.id}
                   goal={goal}
                   onClick={() => handleGoalClick(goal)}
+                  onAddTransaction={() => openTransactionModal(goal)}
                   index={index}
                 />
               ))}
@@ -200,6 +252,19 @@ export const Dashboard = () => {
         onClose={() => setIsCreateModalOpen(false)}
         onSubmit={handleCreateGoal}
       />
+
+      {/* Add Transaction Modal */}
+      {selectedGoalForTransaction && (
+        <AddTransactionModal
+          isOpen={isTransactionModalOpen}
+          onClose={() => {
+            setIsTransactionModalOpen(false);
+            setSelectedGoalForTransaction(null);
+          }}
+          onSubmit={handleAddTransaction}
+          goalName={selectedGoalForTransaction.name}
+        />
+      )}
 
       {/* Celebration Modal */}
       {celebrationGoal && (

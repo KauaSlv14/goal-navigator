@@ -6,17 +6,18 @@ import { cn } from '@/lib/utils';
 interface GoalCardProps {
   goal: GoalWithProgress;
   onClick: () => void;
+  onAddTransaction?: (type: 'entrada' | 'saida') => void;
   index?: number;
 }
 
-export const GoalCard = ({ goal, onClick, index = 0 }: GoalCardProps) => {
+export const GoalCard = ({ goal, onClick, onAddTransaction, index = 0 }: GoalCardProps) => {
   const animationDelay = `${index * 100}ms`;
 
   return (
     <div
       onClick={onClick}
       className={cn(
-        'card-elevated p-5 cursor-pointer group transition-all duration-300 hover:scale-[1.02] animate-fade-in-up',
+        'card-elevated p-5 cursor-pointer group transition-all duration-300 hover:scale-[1.02] animate-fade-in-up relative',
         goal.isCompleted && 'ring-2 ring-success/30'
       )}
       style={{ animationDelay }}
@@ -81,6 +82,21 @@ export const GoalCard = ({ goal, onClick, index = 0 }: GoalCardProps) => {
             <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
               <Calendar className="w-3.5 h-3.5" />
               <span>Meta: {formatDate(goal.targetDate)}</span>
+            </div>
+          )}
+
+          {/* Actions */}
+          {onAddTransaction && !goal.isCompleted && (
+            <div className="mt-3 flex gap-2">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAddTransaction('saida');
+                }}
+                className="flex-1 bg-destructive/10 hover:bg-destructive/20 text-destructive text-sm font-medium py-2 rounded-lg transition-colors flex items-center justify-center gap-1.5"
+              >
+                Adicionar Despesa
+              </button>
             </div>
           )}
         </div>
