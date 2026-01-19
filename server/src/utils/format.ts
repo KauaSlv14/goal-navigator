@@ -29,15 +29,27 @@ export const calculateGoalProgress = (params: {
       0
     );
 
+  const totalExpenses = params.transactions
+    .filter((t) => t.category === 'saida')
+    .reduce((sum, tx) => sum + tx.amount, 0);
+
   const totalCurrent = cashBalance + pixBalance;
-  const percentage = params.targetAmount > 0 ? Math.min(100, (totalCurrent / params.targetAmount) * 100) : 0;
+
+  // Percentage of net progress
+  const percentage = params.targetAmount > 0 ? Math.min(100, Math.max(0, (totalCurrent / params.targetAmount) * 100)) : 0;
+
+  // Percentage of expenses relative to target
+  const expensePercentage = params.targetAmount > 0 ? Math.min(100, (totalExpenses / params.targetAmount) * 100) : 0;
+
   const isCompleted = percentage >= 100;
 
   return {
     cashBalance,
     pixBalance,
     totalCurrent,
+    totalExpenses,
     percentage,
+    expensePercentage,
     isCompleted,
   };
 };

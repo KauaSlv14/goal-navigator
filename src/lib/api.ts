@@ -53,7 +53,9 @@ interface ApiGoal {
   currentCash: number;
   currentPix: number;
   totalCurrent: number;
+  totalExpenses?: number;
   percentage: number;
+  expensePercentage?: number;
   transactions?: ApiTransaction[];
   recurringPayments?: ApiRecurring[];
 }
@@ -97,7 +99,9 @@ const mapGoal = (goal: ApiGoal): GoalWithProgress => ({
   updatedAt: new Date(goal.updatedAt),
   isCompleted: goal.isCompleted,
   totalCurrent: goal.totalCurrent,
+  totalExpenses: goal.totalExpenses,
   percentage: goal.percentage,
+  expensePercentage: goal.expensePercentage,
   transactions:
     goal.transactions?.map((t) => ({
       id: t.id,
@@ -114,9 +118,9 @@ const mapGoal = (goal: ApiGoal): GoalWithProgress => ({
 const authHeaders = (token?: string) =>
   token
     ? {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      }
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    }
     : { 'Content-Type': 'application/json' };
 
 export const register = async (data: AuthCredentials): Promise<AuthResponse> => {

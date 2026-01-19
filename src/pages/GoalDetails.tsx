@@ -230,7 +230,7 @@ export const GoalDetails = () => {
                   de {formatCurrency(goal.targetAmount)}
                 </span>
               </div>
-              <ProgressBar percentage={goal.percentage} size="lg" />
+              <ProgressBar percentage={goal.percentage} expensePercentage={goal.expensePercentage} size="lg" />
             </div>
 
             {/* Balances */}

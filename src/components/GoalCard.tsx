@@ -74,32 +74,37 @@ export const GoalCard = ({ goal, onClick, onAddTransaction, index = 0 }: GoalCar
                 de {formatCurrency(goal.targetAmount)}
               </span>
             </div>
-            <ProgressBar percentage={goal.percentage} showLabel={false} size="sm" />
           </div>
-
-          {/* Target date */}
-          {goal.targetDate && (
-            <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
-              <Calendar className="w-3.5 h-3.5" />
-              <span>Meta: {formatDate(goal.targetDate)}</span>
-            </div>
-          )}
-
-          {/* Actions */}
-          {onAddTransaction && !goal.isCompleted && (
-            <div className="mt-3 flex gap-2">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onAddTransaction('saida');
-                }}
-                className="flex-1 bg-destructive/10 hover:bg-destructive/20 text-destructive text-sm font-medium py-2 rounded-lg transition-colors flex items-center justify-center gap-1.5"
-              >
-                Adicionar Despesa
-              </button>
-            </div>
-          )}
+          <ProgressBar
+            percentage={goal.percentage}
+            expensePercentage={goal.expensePercentage}
+            showLabel={false}
+            size="sm"
+          />
         </div>
+
+        {/* Target date */}
+        {goal.targetDate && (
+          <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
+            <Calendar className="w-3.5 h-3.5" />
+            <span>Meta: {formatDate(goal.targetDate)}</span>
+          </div>
+        )}
+
+        {/* Actions */}
+        {onAddTransaction && !goal.isCompleted && (
+          <div className="mt-3 flex gap-2">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onAddTransaction('saida');
+              }}
+              className="flex-1 bg-destructive/10 hover:bg-destructive/20 text-destructive text-sm font-medium py-2 rounded-lg transition-colors flex items-center justify-center gap-1.5"
+            >
+              Adicionar Despesa
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -45,7 +45,9 @@ export interface Goal {
 
 export interface GoalWithProgress extends Goal {
   totalCurrent: number;
+  totalExpenses?: number;
   percentage: number;
+  expensePercentage?: number;
   transactions: Transaction[];
   recurringPayments: RecurringPayment[];
 }

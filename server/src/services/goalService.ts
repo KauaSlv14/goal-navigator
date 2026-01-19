@@ -219,7 +219,9 @@ const mapGoalWithProgress = (goal: any) => {
     currentCash: progress.cashBalance,
     currentPix: progress.pixBalance,
     totalCurrent: progress.totalCurrent,
+    totalExpenses: progress.totalExpenses,
     percentage: progress.percentage,
+    expensePercentage: progress.expensePercentage,
     transactions: transactions.map((t: any) => ({
       id: t.id,
       goalId: t.goalId,
