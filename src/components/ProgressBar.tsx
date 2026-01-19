@@ -26,31 +26,36 @@ export const ProgressBar = ({
     lg: 'h-4',
   };
 
+  const totalProgress = Math.min(100, clampedPercentage + clampedExpense);
+
   return (
     <div className={cn('w-full', className)}>
       <div
         className={cn(
-          'w-full bg-secondary rounded-full overflow-hidden flex',
+          'w-full bg-secondary rounded-full overflow-hidden relative',
           sizeClasses[size]
         )}
       >
+        {/* Faded Background Bar (Total Progress + Expense) */}
+        {clampedExpense > 0 && (
+          <div
+            className={cn(
+              'absolute top-0 left-0 h-full bg-primary/30 rounded-full transition-all duration-700 ease-out',
+              animated && 'animate-progress-fill'
+            )}
+            style={{ width: `${totalProgress}%` }}
+          />
+        )}
+
+        {/* Main Progress Bar (Net) */}
         <div
           className={cn(
-            'progress-bar h-full rounded-none',
+            'absolute top-0 left-0 progress-bar h-full rounded-full z-10',
             animated && 'animate-progress-fill',
             clampedPercentage >= 100 && 'animate-pulse-glow'
           )}
           style={{ width: `${clampedPercentage}%` }}
         />
-        {clampedExpense > 0 && (
-          <div
-            className={cn(
-              'h-full bg-primary/30 transition-all duration-700 ease-out',
-              animated && 'animate-progress-fill'
-            )}
-            style={{ width: `${clampedExpense}%` }}
-          />
-        )}
       </div>
       {showLabel && (
         <div className="flex justify-between items-center mt-1.5">
