@@ -9,19 +9,23 @@ export async function friendsRoutes(app: FastifyInstance) {
 
     // Add friend
     app.post('/', async (request, reply) => {
-        const userId = request.user.sub;
-        const createFriendSchema = z.object({
-            email: z.string().email(),
-        });
+        try {
+            const userId = request.user.sub;
+            const createFriendSchema = z.object({
+                email: z.string().email(),
+            });
 
-        const body = createFriendSchema.parse(request.body);
+            const body = createFriendSchema.parse(request.body);
 
-        const friendship = await addFriend({
-            email: body.email,
-            userId,
-        });
+            const friendship = await addFriend({
+                email: body.email,
+                userId,
+            });
 
-        return reply.status(201).send(friendship);
+            return reply.status(201).send(friendship);
+        } catch (err: any) {
+            return reply.status(400).send({ error: err.message });
+        }
     });
 
     // List friends
