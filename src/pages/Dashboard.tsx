@@ -8,7 +8,7 @@ import { CelebrationModal } from '@/components/CelebrationModal';
 import { AddTransactionModal } from '@/components/AddTransactionModal';
 import { createTransaction, createGoal, getGoals } from '@/lib/api';
 import { formatCurrency, GoalFormData, GoalWithProgress, UserSession, TransactionFormData } from '@/lib/types';
-import { Target, Plus, Wallet, Banknote, Smartphone, LogOut, User } from 'lucide-react';
+import { Target, Plus, Wallet, Banknote, Smartphone, LogOut, User, Users } from 'lucide-react';
 import { toast } from 'sonner';
 
 export const Dashboard = () => {
@@ -137,8 +137,8 @@ export const Dashboard = () => {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" onClick={() => toast.info('Em breve!')}>
-                <User className="w-5 h-5" />
+              <Button variant="ghost" size="icon" onClick={() => navigate('/friends')}>
+                <Users className="w-5 h-5" />
               </Button>
               <Button variant="ghost" size="icon" onClick={handleLogout}>
                 <LogOut className="w-5 h-5" />

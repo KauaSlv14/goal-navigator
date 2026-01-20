@@ -18,6 +18,7 @@ const buildServer = () => {
   app.register(authRoutes, { prefix: '/api/auth' });
   app.register(goalsRoutes, { prefix: '/api/goals' });
   app.register(recurringRoutes, { prefix: '/api/recurring' });
+  app.register(friendsRoutes, { prefix: '/api/friends' });
 
   registerRecurrenceJob(app);
 

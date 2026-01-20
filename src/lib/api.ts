@@ -195,6 +195,37 @@ export const runRecurringNow = async () => {
   return handleResponse(res);
 };
 
+export interface Friend {
+  id: string;
+  name: string;
+  email: string;
+}
+
+export const addFriend = async (email: string, user: UserSession): Promise<Friend> => {
+  const res = await fetch(`${API_URL}/api/friends`, {
+    method: 'POST',
+    headers: authHeaders(user.token),
+    body: JSON.stringify({ email }),
+  });
+  const data = await handleResponse(res);
+  return data.friend; // Backend returns the friendship object which contains 'friend'
+};
+
+export const getFriends = async (user: UserSession): Promise<Friend[]> => {
+  const res = await fetch(`${API_URL}/api/friends`, {
+    headers: authHeaders(user.token),
+  });
+  return handleResponse(res);
+};
+
+export const getFriendGoals = async (friendId: string, user: UserSession): Promise<GoalWithProgress[]> => {
+  const res = await fetch(`${API_URL}/api/friends/${friendId}/goals`, {
+    headers: authHeaders(user.token),
+  });
+  const data: ApiGoal[] = await handleResponse(res);
+  return data.map(mapGoal);
+};
+
 export const deleteGoal = async (goalId: string, user: UserSession) => {
   const res = await fetch(`${API_URL}/api/goals/${goalId}`, {
     method: 'DELETE',
