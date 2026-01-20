@@ -3,6 +3,7 @@ import cors from '@fastify/cors';
 import { goalsRoutes } from './routes/goals';
 import { recurringRoutes } from './routes/recurring';
 import { authRoutes } from './routes/auth';
+import { friendsRoutes } from './routes/friends';
 import { env } from './env';
 import { registerRecurrenceJob } from './jobs/recurrenceJob';
 
