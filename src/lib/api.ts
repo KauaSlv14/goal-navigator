@@ -226,6 +226,43 @@ export const getFriendGoals = async (friendId: string, user: UserSession): Promi
   return data.map(mapGoal);
 };
 
+export interface FriendRequest {
+  id: string;
+  sender?: Friend;
+  friend?: Friend;
+  createdAt: string;
+}
+
+export const getFriendRequests = async (user: UserSession): Promise<FriendRequest[]> => {
+  const res = await fetch(`${API_URL}/api/friends/requests`, {
+    headers: authHeaders(user.token),
+  });
+  return handleResponse(res);
+};
+
+export const getSentRequests = async (user: UserSession): Promise<FriendRequest[]> => {
+  const res = await fetch(`${API_URL}/api/friends/requests/sent`, {
+    headers: authHeaders(user.token),
+  });
+  return handleResponse(res);
+};
+
+export const acceptFriendRequest = async (requestId: string, user: UserSession) => {
+  const res = await fetch(`${API_URL}/api/friends/requests/${requestId}/accept`, {
+    method: 'POST',
+    headers: authHeaders(user.token),
+  });
+  await handleResponse(res);
+};
+
+export const rejectFriendRequest = async (requestId: string, user: UserSession) => {
+  const res = await fetch(`${API_URL}/api/friends/requests/${requestId}`, {
+    method: 'DELETE',
+    headers: authHeaders(user.token),
+  });
+  await handleResponse(res);
+};
+
 export const deleteGoal = async (goalId: string, user: UserSession) => {
   const res = await fetch(`${API_URL}/api/goals/${goalId}`, {
     method: 'DELETE',

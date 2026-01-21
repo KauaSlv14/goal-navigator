@@ -1,5 +1,5 @@
-import { prisma } from '../db';
-import { calculateGoalProgress } from '../utils/format';
+import { prisma } from '../db.js';
+import { calculateGoalProgress } from '../utils/format.js';
 
 interface FriendInput {
     email: string;
@@ -20,7 +20,7 @@ export const addFriend = async ({ email, userId }: FriendInput) => {
         throw new Error('Você não pode adicionar a si mesmo.');
     }
 
-    // Check if already friends
+    // Check if already friends or request pending
     const existingFriendship = await prisma.friendship.findUnique({
         where: {
             userId_friendId: {
@@ -31,14 +31,33 @@ export const addFriend = async ({ email, userId }: FriendInput) => {
     });
 
     if (existingFriendship) {
-        throw new Error('Este usuário já é seu amigo.');
+        if (existingFriendship.status === 'ACCEPTED') {
+            throw new Error('Este usuário já é seu amigo.');
+        } else {
+            throw new Error('Solicitação de amizade já enviada.');
+        }
     }
 
-    // Create friendship (following)
+    // Check if there is an incoming request from them (Mutual)
+    // If they already requested me, we could auto-accept, but let's stick to explicit flow for now to not confuse.
+    // Or better: If I add them and they added me, it becomes accepted.
+    const reverseRequest = await prisma.friendship.findUnique({
+        where: {
+            userId_friendId: {
+                userId: friend.id,
+                friendId: userId,
+            },
+        },
+    });
+
+    let status: 'PENDING' | 'ACCEPTED' = 'PENDING';
+
+    // Create friendship (request)
     const friendship = await prisma.friendship.create({
         data: {
             userId,
             friendId: friend.id,
+            status: 'PENDING',
         },
         include: {
             friend: {
@@ -56,7 +75,10 @@ export const addFriend = async ({ email, userId }: FriendInput) => {
 
 export const listFriends = async (userId: string) => {
     const friendships = await prisma.friendship.findMany({
-        where: { userId },
+        where: {
+            userId,
+            status: 'ACCEPTED',
+        },
         include: {
             friend: {
                 select: {
@@ -72,11 +94,145 @@ export const listFriends = async (userId: string) => {
     return friendships.map(f => f.friend);
 };
 
-export const getFriendGoals = async (friendId: string) => {
+export const listSentRequests = async (userId: string) => {
+    const requests = await prisma.friendship.findMany({
+        where: {
+            userId,
+            status: 'PENDING',
+        },
+        include: {
+            friend: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                },
+            },
+        },
+        orderBy: { createdAt: 'desc' },
+    });
+
+    return requests.map(r => ({
+        id: r.id,
+        friend: r.friend,
+        createdAt: r.createdAt,
+    }));
+};
+
+export const listRequests = async (userId: string) => {
+    // Incoming requests: friendId is ME, status is PENDING
+    const requests = await prisma.friendship.findMany({
+        where: {
+            friendId: userId,
+            status: 'PENDING',
+        },
+        include: {
+            user: { // The sender
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                },
+            },
+        },
+        orderBy: { createdAt: 'desc' },
+    });
+
+    return requests.map(r => ({
+        id: r.id, // Request ID
+        sender: r.user,
+        createdAt: r.createdAt,
+    }));
+};
+
+export const acceptRequest = async (requestId: string, userId: string) => {
+    const request = await prisma.friendship.findUnique({
+        where: { id: requestId },
+    });
+
+    if (!request) {
+        throw new Error('Solicitação não encontrada.');
+    }
+
+    if (request.friendId !== userId) {
+        throw new Error('Não autorizado.');
+    }
+
+    // 1. Update request to ACCEPTED
+    await prisma.friendship.update({
+        where: { id: requestId },
+        data: { status: 'ACCEPTED' },
+    });
+
+    // 2. Create reverse friendship (Me -> Sender) as ACCEPTED
+    // Check if it exists first (maybe I sent one too?)
+    const reverseExists = await prisma.friendship.findUnique({
+        where: {
+            userId_friendId: {
+                userId,
+                friendId: request.userId,
+            },
+        },
+    });
+
+    if (reverseExists) {
+        await prisma.friendship.update({
+            where: { id: reverseExists.id },
+            data: { status: 'ACCEPTED' },
+        });
+    } else {
+        await prisma.friendship.create({
+            data: {
+                userId,
+                friendId: request.userId,
+                status: 'ACCEPTED',
+            },
+        });
+    }
+
+    return { ok: true };
+};
+
+export const rejectRequest = async (requestId: string, userId: string) => {
+    const request = await prisma.friendship.findUnique({
+        where: { id: requestId },
+    });
+
+    if (!request) {
+        throw new Error('Solicitação não encontrada.');
+    }
+
+    if (request.friendId !== userId) {
+        throw new Error('Não autorizado.');
+    }
+
+    await prisma.friendship.delete({
+        where: { id: requestId },
+    });
+
+    return { ok: true };
+};
+
+export const getFriendGoals = async (friendId: string, myUserId: string) => {
+    // Check if we are friends (ACCEPTED)
+    // We check if I (myUserId) have an ACCEPTED friendship with friendId
+    const friendship = await prisma.friendship.findUnique({
+        where: {
+            userId_friendId: {
+                userId: myUserId,
+                friendId: friendId,
+            },
+        },
+    });
+
+    if (!friendship || friendship.status !== 'ACCEPTED') {
+        throw new Error('Vocês não são amigos.'); // Or return empty array
+    }
+
     const goals = await prisma.goal.findMany({
         where: {
             userId: friendId,
-            isCompleted: false, // Only show active goals? Or all? Let's show active for now.
+            isCompleted: false,
         },
         include: {
             transactions: true,

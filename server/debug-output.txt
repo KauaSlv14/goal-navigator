@@ -1,0 +1,15 @@
+"--- Debugging ZKA Accept Logic ---"
+"Acting as ZKA (e8076fac-e1b2-4589-afb6-f17108c42b2f)"
+"Request in DB:"
+{
+  "id": "1c005dfc-0f4b-408f-a839-b3559a26d89a",
+  "userId": "e7bcc184-ec94-4775-bf61-722237dae55b",
+  "friendId": "e8076fac-e1b2-4589-afb6-f17108c42b2f",
+  "status": "PENDING",
+  "createdAt": "2026-01-20T01:19:44.225Z"
+}
+"\n--> Attempting to Accept Request..."
+"Accept Result:"
+{
+  "ok": true
+}

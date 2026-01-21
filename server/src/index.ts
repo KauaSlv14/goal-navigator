@@ -1,4 +1,5 @@
 import Fastify from 'fastify';
+// Restart trigger
 import cors from '@fastify/cors';
 import { goalsRoutes } from './routes/goals';
 import { recurringRoutes } from './routes/recurring';

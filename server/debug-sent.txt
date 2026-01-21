@@ -1,0 +1,62 @@
+--- Debugging Sent Requests ---
+User: demo@goal.local (0e0dc007-c37b-4b95-a143-13ffd0130d56)
+
+Attempting to add gabriel.sbrana@gmail.com...
+Add Result:
+{
+  "id": "1305e5ef-25c6-4245-b9a1-dba4f3b3dcd2",
+  "userId": "0e0dc007-c37b-4b95-a143-13ffd0130d56",
+  "friendId": "816643bd-c565-4868-b78e-0efc637a93c6",
+  "status": "PENDING",
+  "createdAt": "2026-01-21T00:59:12.082Z",
+  "friend": {
+    "id": "816643bd-c565-4868-b78e-0efc637a93c6",
+    "name": "gabriel.sbrana",
+    "email": "gabriel.sbrana@gmail.com"
+  }
+}
+Sent Requests:
+[
+  {
+    "id": "1305e5ef-25c6-4245-b9a1-dba4f3b3dcd2",
+    "friend": {
+      "id": "816643bd-c565-4868-b78e-0efc637a93c6",
+      "name": "gabriel.sbrana",
+      "email": "gabriel.sbrana@gmail.com"
+    },
+    "createdAt": "2026-01-21T00:59:12.082Z"
+  },
+  {
+    "id": "b96238bc-32af-4b1d-83d1-83ed6a697e64",
+    "friend": {
+      "id": "5a510957-ca13-4272-bf55-3e5a843a376c",
+      "name": "gabriel.sbrana",
+      "email": "gabriel.sbrana@tauge.com.br"
+    },
+    "createdAt": "2026-01-20T01:01:42.380Z"
+  }
+]
+All Friendships (Raw):
+[
+  {
+    "id": "b96238bc-32af-4b1d-83d1-83ed6a697e64",
+    "userId": "0e0dc007-c37b-4b95-a143-13ffd0130d56",
+    "friendId": "5a510957-ca13-4272-bf55-3e5a843a376c",
+    "status": "PENDING",
+    "createdAt": "2026-01-20T01:01:42.380Z"
+  },
+  {
+    "id": "21585f2b-b66a-4c50-8d6a-9c11df143edb",
+    "userId": "0e0dc007-c37b-4b95-a143-13ffd0130d56",
+    "friendId": "7e45e9a6-2bba-4783-909e-81f4684aefc7",
+    "status": "ACCEPTED",
+    "createdAt": "2026-01-21T00:36:53.983Z"
+  },
+  {
+    "id": "1305e5ef-25c6-4245-b9a1-dba4f3b3dcd2",
+    "userId": "0e0dc007-c37b-4b95-a143-13ffd0130d56",
+    "friendId": "816643bd-c565-4868-b78e-0efc637a93c6",
+    "status": "PENDING",
+    "createdAt": "2026-01-21T00:59:12.082Z"
+  }
+]

@@ -96,13 +96,19 @@ model RecurringPayment {
   updatedAt  DateTime            @updatedAt
 }
 
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+}
+
 model Friendship {
-  id        String   @id @default(uuid())
+  id        String           @id @default(uuid())
   userId    String
-  user      User     @relation("UserFriends", fields: [userId], references: [id])
+  user      User             @relation("UserFriends", fields: [userId], references: [id])
   friendId  String
-  friend    User     @relation("FriendUsers", fields: [friendId], references: [id])
-  createdAt DateTime @default(now())
+  friend    User             @relation("FriendUsers", fields: [friendId], references: [id])
+  status    FriendshipStatus @default(PENDING)
+  createdAt DateTime         @default(now())
 
   @@unique([userId, friendId])
 }

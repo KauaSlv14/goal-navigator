@@ -1,8 +1,8 @@
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import jwt from 'jsonwebtoken';
-import { env } from '../env';
-import { addFriend, listFriends, getFriendGoals } from '../services/friendService';
+import { env } from '../env.js';
+import { addFriend, listFriends, getFriendGoals, listRequests, acceptRequest, rejectRequest, listSentRequests } from '../services/friendService.js';
 
 const getUserFromAuth = (authorization?: string) => {
     if (!authorization) return null;
@@ -18,7 +18,7 @@ const getUserFromAuth = (authorization?: string) => {
 };
 
 export async function friendsRoutes(app: FastifyInstance) {
-    // Add friend
+    // Add friend (Send Request)
     app.post('/', async (request, reply) => {
         const user = getUserFromAuth(request.headers.authorization);
         if (!user) {
@@ -33,6 +33,7 @@ export async function friendsRoutes(app: FastifyInstance) {
 
             const body = createFriendSchema.parse(request.body);
 
+            // This now acts as "Send Request"
             const friendship = await addFriend({
                 email: body.email,
                 userId,
@@ -44,7 +45,7 @@ export async function friendsRoutes(app: FastifyInstance) {
         }
     });
 
-    // List friends
+    // List friends (Accepted only)
     app.get('/', async (request, reply) => {
         const user = getUserFromAuth(request.headers.authorization);
         if (!user) {
@@ -56,6 +57,69 @@ export async function friendsRoutes(app: FastifyInstance) {
         return friends;
     });
 
+    // List sent requests (pending)
+    app.get('/requests/sent', async (request, reply) => {
+        const user = getUserFromAuth(request.headers.authorization);
+        if (!user) {
+            return reply.code(401).send({ error: 'Não autorizado' });
+        }
+
+        const userId = user.sub;
+        const requests = await listSentRequests(userId);
+        return requests;
+    });
+
+    // List pending requests
+    app.get('/requests', async (request, reply) => {
+        const user = getUserFromAuth(request.headers.authorization);
+        if (!user) {
+            return reply.code(401).send({ error: 'Não autorizado' });
+        }
+
+        const userId = user.sub;
+        const requests = await listRequests(userId);
+        return requests;
+    });
+
+    // Accept request
+    app.post('/requests/:id/accept', async (request, reply) => {
+        const user = getUserFromAuth(request.headers.authorization);
+        if (!user) {
+            return reply.code(401).send({ error: 'Não autorizado' });
+        }
+
+        const { id } = request.params as { id: string };
+        console.log(`[DEBUG] Accepting request ${id} by user ${user.sub} (${user.email})`);
+
+        try {
+            await acceptRequest(id, user.sub);
+            return reply.send({ ok: true });
+        } catch (err: any) {
+            console.error('[DEBUG] Accept Error:', err.message);
+            return reply.code(400).send({ error: err.message });
+        }
+    });
+
+    // Reject request
+    app.delete('/requests/:id', async (request, reply) => {
+        const user = getUserFromAuth(request.headers.authorization);
+        if (!user) {
+            return reply.code(401).send({ error: 'Não autorizado' });
+        }
+
+        const { id } = request.params as { id: string };
+        console.log(`[DEBUG] Rejecting request ${id} by user ${user.sub}`);
+
+        try {
+            await rejectRequest(id, user.sub);
+            return reply.send({ ok: true });
+        } catch (err: any) {
+            console.error('[DEBUG] Reject Error:', err.message);
+            return reply.code(400).send({ error: err.message });
+        }
+    });
+
+
     // Get friend's goals
     app.get('/:friendId/goals', async (request, reply) => {
         const user = getUserFromAuth(request.headers.authorization);
@@ -64,7 +128,8 @@ export async function friendsRoutes(app: FastifyInstance) {
         }
 
         const { friendId } = request.params as { friendId: string };
-        const goals = await getFriendGoals(friendId);
+        // FIX: Pass BOTH arguments: friendId and myUserId
+        const goals = await getFriendGoals(friendId, user.sub);
         return goals;
     });
 }
