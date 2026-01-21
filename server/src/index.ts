@@ -1,12 +1,12 @@
 import Fastify from 'fastify';
 // Restart trigger
 import cors from '@fastify/cors';
-import { goalsRoutes } from './routes/goals';
-import { recurringRoutes } from './routes/recurring';
-import { authRoutes } from './routes/auth';
-import { friendsRoutes } from './routes/friends';
-import { env } from './env';
-import { registerRecurrenceJob } from './jobs/recurrenceJob';
+import { goalsRoutes } from './routes/goals.js';
+import { recurringRoutes } from './routes/recurring.js';
+import { authRoutes } from './routes/auth.js';
+import { friendsRoutes } from './routes/friends.js';
+import { env } from './env.js';
+import { registerRecurrenceJob } from './jobs/recurrenceJob.js';
 
 const buildServer = () => {
   const app = Fastify({
@@ -15,6 +15,7 @@ const buildServer = () => {
 
   app.register(cors, {
     origin: env.corsOrigin === '*' ? true : env.corsOrigin,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   });
 
   app.register(authRoutes, { prefix: '/api/auth' });
