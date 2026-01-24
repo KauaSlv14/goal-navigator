@@ -72,7 +72,7 @@ export const Auth = () => {
         });
         localStorage.setItem(
           'user',
-          JSON.stringify({ email: response.user.email, name: response.user.name, token: response.token })
+          JSON.stringify({ id: response.user.id, email: response.user.email, name: response.user.name, token: response.token })
         );
         toast.success('Conta criada com sucesso!');
         navigate('/dashboard');
@@ -83,7 +83,7 @@ export const Auth = () => {
         });
         localStorage.setItem(
           'user',
-          JSON.stringify({ email: response.user.email, name: response.user.name, token: response.token })
+          JSON.stringify({ id: response.user.id, email: response.user.email, name: response.user.name, token: response.token })
         );
         toast.success('Login realizado com sucesso!');
         navigate('/dashboard');

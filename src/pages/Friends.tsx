@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { UserSession } from '@/lib/types';
+import { UserSession, GoalWithProgress, formatCurrency, formatDate } from '@/lib/types';
 import {
     getFriends,
     addFriend,
@@ -35,6 +35,7 @@ export const Friends = () => {
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [emailToAdd, setEmailToAdd] = useState('');
     const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null);
+    const [selectedGoal, setSelectedGoal] = useState<GoalWithProgress | null>(null);
 
     // Redirect if not logged in
     if (!user?.token) {
@@ -300,7 +301,7 @@ export const Friends = () => {
                                 <div key={goal.id} className="opacity-90 hover:opacity-100 transition-opacity">
                                     <GoalCard
                                         goal={goal}
-                                        onClick={() => { }}
+                                        onClick={() => setSelectedGoal(goal)}
                                     />
                                 </div>
                             ))
@@ -310,6 +311,76 @@ export const Friends = () => {
                             </div>
                         )}
                     </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Goal Details Modal */}
+            <Dialog open={!!selectedGoal} onOpenChange={(open) => !open && setSelectedGoal(null)}>
+                <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>{selectedGoal?.name}</DialogTitle>
+                    </DialogHeader>
+
+                    {selectedGoal && (
+                        <div className="space-y-6 pt-4">
+                            {/* Goal Progress */}
+                            <div className="bg-secondary/50 rounded-xl p-4 space-y-2">
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-muted-foreground">Progresso</span>
+                                    <span className="font-semibold">{selectedGoal.percentage.toFixed(0)}%</span>
+                                </div>
+                                <div className="w-full bg-secondary rounded-full h-3">
+                                    <div
+                                        className="bg-primary rounded-full h-3 transition-all"
+                                        style={{ width: `${Math.min(selectedGoal.percentage, 100)}%` }}
+                                    />
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-muted-foreground">
+                                        {formatCurrency(selectedGoal.totalCurrent)}
+                                    </span>
+                                    <span className="font-semibold text-primary">
+                                        {formatCurrency(selectedGoal.targetAmount)}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Transaction History */}
+                            <div>
+                                <h4 className="font-semibold text-foreground mb-3">Histórico de Transações</h4>
+                                {selectedGoal.transactions && selectedGoal.transactions.length > 0 ? (
+                                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                                        {selectedGoal.transactions.map((tx) => (
+                                            <div
+                                                key={tx.id}
+                                                className={`flex items-center justify-between p-3 rounded-lg border ${tx.category === 'entrada'
+                                                        ? 'border-green-500/30 bg-green-500/5'
+                                                        : 'border-red-500/30 bg-red-500/5'
+                                                    }`}
+                                            >
+                                                <div>
+                                                    <p className="text-sm font-medium">{tx.description || (tx.category === 'entrada' ? 'Depósito' : 'Gasto')}</p>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        {formatDate(new Date(tx.createdAt))} • {tx.type.toUpperCase()}
+                                                    </p>
+                                                </div>
+                                                <span
+                                                    className={`font-semibold ${tx.category === 'entrada' ? 'text-green-500' : 'text-red-500'
+                                                        }`}
+                                                >
+                                                    {tx.category === 'entrada' ? '+' : '-'}{formatCurrency(tx.amount)}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-sm text-muted-foreground text-center py-4">
+                                        Nenhuma transação registrada.
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    )}
                 </DialogContent>
             </Dialog>
         </div>

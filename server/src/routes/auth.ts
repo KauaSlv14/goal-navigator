@@ -2,8 +2,8 @@ import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { prisma } from '../db';
-import { env } from '../env';
+import { prisma } from '../db.js';
+import { env } from '../env.js';
 
 const tokenForUser = (user: { id: string; email: string; name: string }) =>
   jwt.sign({ sub: user.id, email: user.email, name: user.name }, env.jwtSecret, { expiresIn: '7d' });
@@ -35,7 +35,7 @@ export const authRoutes = async (app: FastifyInstance) => {
     });
 
     const token = tokenForUser(user);
-    return { token, user: { id: user.id, email: user.email, name: user.name } };
+    return { token, user: { id: user.id, email: user.email, name: user.name, avatarUrl: user.avatarUrl } };
   });
 
   app.post('/login', async (request, reply) => {
@@ -61,7 +61,7 @@ export const authRoutes = async (app: FastifyInstance) => {
         data: { passwordHash: newHash },
       });
       const token = tokenForUser(updated);
-      return { token, user: { id: updated.id, email: updated.email, name: updated.name } };
+      return { token, user: { id: updated.id, email: updated.email, name: updated.name, avatarUrl: updated.avatarUrl } };
     }
 
     const ok = await bcrypt.compare(parsed.data.password, user.passwordHash);
@@ -70,6 +70,40 @@ export const authRoutes = async (app: FastifyInstance) => {
     }
 
     const token = tokenForUser(user);
-    return { token, user: { id: user.id, email: user.email, name: user.name } };
+    return { token, user: { id: user.id, email: user.email, name: user.name, avatarUrl: user.avatarUrl } };
+  });
+
+  // Update profile (name, avatarUrl)
+  app.put('/profile', async (request, reply) => {
+    const authHeader = request.headers.authorization;
+    if (!authHeader) {
+      return reply.code(401).send({ error: 'Não autorizado' });
+    }
+    const [, token] = authHeader.split(' ');
+    let payload: { sub: string };
+    try {
+      payload = jwt.verify(token, env.jwtSecret) as { sub: string };
+    } catch {
+      return reply.code(401).send({ error: 'Token inválido' });
+    }
+
+    const schema = z.object({
+      name: z.string().min(1).optional(),
+      avatarUrl: z.string().url().optional().or(z.literal('')),
+    });
+    const parsed = schema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.code(400).send({ error: 'Dados inválidos', details: parsed.error.flatten() });
+    }
+
+    const updated = await prisma.user.update({
+      where: { id: payload.sub },
+      data: {
+        ...(parsed.data.name && { name: parsed.data.name }),
+        ...(parsed.data.avatarUrl !== undefined && { avatarUrl: parsed.data.avatarUrl || null }),
+      },
+    });
+
+    return { user: { id: updated.id, email: updated.email, name: updated.name, avatarUrl: updated.avatarUrl } };
   });
 };

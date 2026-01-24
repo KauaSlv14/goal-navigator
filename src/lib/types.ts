@@ -88,8 +88,10 @@ export interface User {
 }
 
 export interface UserSession {
+  id: string;
   email: string;
   name?: string;
+  avatarUrl?: string;
   token: string;
 }
 
@@ -105,6 +107,7 @@ export interface AuthResponse {
     id: string;
     email: string;
     name: string;
+    avatarUrl?: string;
   };
 }
 

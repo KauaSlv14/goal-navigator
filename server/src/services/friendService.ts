@@ -146,13 +146,19 @@ export const listRequests = async (userId: string) => {
 };
 
 export const acceptRequest = async (requestId: string, userId: string) => {
+    console.log(`[acceptRequest] requestId=${requestId}, userId=${userId}`);
+
     const request = await prisma.friendship.findUnique({
         where: { id: requestId },
     });
 
     if (!request) {
+        console.log(`[acceptRequest] Request not found: ${requestId}`);
         throw new Error('Solicitação não encontrada.');
     }
+
+    console.log(`[acceptRequest] Found request: friendId=${request.friendId}, senderId=${request.userId}, status=${request.status}`);
+    console.log(`[acceptRequest] Comparing: request.friendId(${request.friendId}) !== userId(${userId}) => ${request.friendId !== userId}`);
 
     if (request.friendId !== userId) {
         throw new Error('Não autorizado.');
