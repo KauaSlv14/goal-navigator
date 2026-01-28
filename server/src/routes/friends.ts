@@ -84,18 +84,22 @@ export async function friendsRoutes(app: FastifyInstance) {
     // Accept request
     app.post('/requests/:id/accept', async (request, reply) => {
         const user = getUserFromAuth(request.headers.authorization);
+        console.log('[DEBUG /accept] JWT user payload:', JSON.stringify(user, null, 2));
+
         if (!user) {
             return reply.code(401).send({ error: 'Não autorizado' });
         }
 
         const { id } = request.params as { id: string };
-        console.log(`[DEBUG] Accepting request ${id} by user ${user.sub} (${user.email})`);
+        console.log(`[DEBUG /accept] Request ID: ${id}`);
+        console.log(`[DEBUG /accept] User sub from JWT: ${user.sub}`);
+        console.log(`[DEBUG /accept] User email from JWT: ${user.email}`);
 
         try {
             await acceptRequest(id, user.sub);
             return reply.send({ ok: true });
         } catch (err: any) {
-            console.error('[DEBUG] Accept Error:', err.message);
+            console.error('[DEBUG /accept] Error:', err.message);
             return reply.code(400).send({ error: err.message });
         }
     });

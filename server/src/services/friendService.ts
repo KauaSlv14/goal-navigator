@@ -146,19 +146,29 @@ export const listRequests = async (userId: string) => {
 };
 
 export const acceptRequest = async (requestId: string, userId: string) => {
-    console.log(`[acceptRequest] requestId=${requestId}, userId=${userId}`);
+    console.log(`[acceptRequest] ==================================`);
+    console.log(`[acceptRequest] requestId=${requestId}`);
+    console.log(`[acceptRequest] userId from JWT=${userId}`);
 
     const request = await prisma.friendship.findUnique({
         where: { id: requestId },
+        include: {
+            user: { select: { email: true } },
+            friend: { select: { email: true } },
+        },
     });
 
     if (!request) {
-        console.log(`[acceptRequest] Request not found: ${requestId}`);
+        console.log(`[acceptRequest] ERROR: Request not found: ${requestId}`);
         throw new Error('Solicitação não encontrada.');
     }
 
-    console.log(`[acceptRequest] Found request: friendId=${request.friendId}, senderId=${request.userId}, status=${request.status}`);
-    console.log(`[acceptRequest] Comparing: request.friendId(${request.friendId}) !== userId(${userId}) => ${request.friendId !== userId}`);
+    console.log(`[acceptRequest] Request found:`);
+    console.log(`   - sender (userId): ${request.userId} (${(request as any).user?.email})`);
+    console.log(`   - recipient (friendId): ${request.friendId} (${(request as any).friend?.email})`);
+    console.log(`   - status: ${request.status}`);
+    console.log(`[acceptRequest] Comparing: request.friendId(${request.friendId}) vs userId(${userId})`);
+    console.log(`[acceptRequest] Match: ${request.friendId === userId}`);
 
     if (request.friendId !== userId) {
         throw new Error('Não autorizado.');

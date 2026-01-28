@@ -251,6 +251,7 @@ export const acceptFriendRequest = async (requestId: string, user: UserSession) 
   const res = await fetch(`${API_URL}/api/friends/requests/${requestId}/accept`, {
     method: 'POST',
     headers: authHeaders(user.token),
+    body: JSON.stringify({}), // Fastify requires body when content-type is application/json
   });
   await handleResponse(res);
 };
@@ -259,6 +260,7 @@ export const rejectFriendRequest = async (requestId: string, user: UserSession) 
   const res = await fetch(`${API_URL}/api/friends/requests/${requestId}`, {
     method: 'DELETE',
     headers: authHeaders(user.token),
+    body: JSON.stringify({}), // Fastify requires body when content-type is application/json
   });
   await handleResponse(res);
 };
