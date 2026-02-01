@@ -1,5 +1,7 @@
 import Fastify from 'fastify';
-// Restart trigger
+import multipart from '@fastify/multipart';
+import fastifyStatic from '@fastify/static';
+import path from 'path';
 import cors from '@fastify/cors';
 import { goalsRoutes } from './routes/goals.js';
 import { recurringRoutes } from './routes/recurring.js';
@@ -18,10 +20,17 @@ const buildServer = () => {
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   });
 
+  app.register(multipart);
+  app.register(fastifyStatic, {
+    root: path.join(process.cwd(), 'server', 'uploads'),
+    prefix: '/uploads/',
+  });
+
   app.register(authRoutes, { prefix: '/api/auth' });
   app.register(goalsRoutes, { prefix: '/api/goals' });
   app.register(recurringRoutes, { prefix: '/api/recurring' });
   app.register(friendsRoutes, { prefix: '/api/friends' });
+
 
   registerRecurrenceJob(app);
 

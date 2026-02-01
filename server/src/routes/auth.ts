@@ -4,6 +4,10 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../db.js';
 import { env } from '../env.js';
+import { pipeline } from 'stream/promises';
+import fs from 'fs';
+import path from 'path';
+import { randomUUID } from 'crypto';
 
 const tokenForUser = (user: { id: string; email: string; name: string }) =>
   jwt.sign({ sub: user.id, email: user.email, name: user.name }, env.jwtSecret, { expiresIn: '7d' });
@@ -73,7 +77,7 @@ export const authRoutes = async (app: FastifyInstance) => {
     return { token, user: { id: user.id, email: user.email, name: user.name, avatarUrl: user.avatarUrl } };
   });
 
-  // Update profile (name, avatarUrl)
+  // Update profile (name, avatar)
   app.put('/profile', async (request, reply) => {
     const authHeader = request.headers.authorization;
     if (!authHeader) {
@@ -87,23 +91,49 @@ export const authRoutes = async (app: FastifyInstance) => {
       return reply.code(401).send({ error: 'Token inválido' });
     }
 
-    const schema = z.object({
-      name: z.string().min(1).optional(),
-      avatarUrl: z.string().url().optional().or(z.literal('')),
-    });
-    const parsed = schema.safeParse(request.body);
-    if (!parsed.success) {
-      return reply.code(400).send({ error: 'Dados inválidos', details: parsed.error.flatten() });
+    const parts = request.parts();
+
+    let name: string | undefined;
+    let avatarUrl: string | undefined;
+
+    for await (const part of parts) {
+      if (part.type === 'file' && part.fieldname === 'avatar') {
+        const ext = hDetermineExtension(part.mimetype) || '.jpg';
+        const filename = `${randomUUID()}${ext}`;
+        const savePath = path.join(process.cwd(), 'server', 'uploads', filename);
+
+        await pipeline(part.file, fs.createWriteStream(savePath));
+
+        // Use full URL if possible, or relative if frontend handles it.
+        // Assuming API runs on defined port. 
+        // We'll construct a full URL for simplicity in frontend.
+        const baseUrl = `http://${request.hostname}`; // hostname includes port
+        avatarUrl = `${baseUrl}/uploads/${filename}`;
+      } else if (part.type === 'field' && part.fieldname === 'name') {
+        // limit name length or validation?
+        name = part.value as string;
+      }
     }
 
     const updated = await prisma.user.update({
       where: { id: payload.sub },
       data: {
-        ...(parsed.data.name && { name: parsed.data.name }),
-        ...(parsed.data.avatarUrl !== undefined && { avatarUrl: parsed.data.avatarUrl || null }),
+        ...(name && { name }),
+        ...(avatarUrl && { avatarUrl }),
       },
     });
 
     return { user: { id: updated.id, email: updated.email, name: updated.name, avatarUrl: updated.avatarUrl } };
   });
+
+  // Helper for extension
+  function hDetermineExtension(mimetype: string) {
+    switch (mimetype) {
+      case 'image/jpeg': return '.jpg';
+      case 'image/png': return '.png';
+      case 'image/webp': return '.webp';
+      case 'image/gif': return '.gif';
+      default: return '.jpg';
+    }
+  }
 };

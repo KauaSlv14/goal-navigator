@@ -16,7 +16,7 @@ export const Profile = () => {
     const user: UserSession | null = storedUser ? JSON.parse(storedUser) : null;
 
     const [name, setName] = useState(user?.name || '');
-    const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl || '');
+    const [avatarFile, setAvatarFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState(user?.avatarUrl || '');
 
     useEffect(() => {
@@ -26,7 +26,7 @@ export const Profile = () => {
     }, [user, navigate]);
 
     const updateProfileMutation = useMutation({
-        mutationFn: (data: { name: string; avatarUrl: string }) =>
+        mutationFn: (data: { name: string; avatarFile: File | null }) =>
             updateProfile(data, user as UserSession),
         onSuccess: (data) => {
             // Update local storage
@@ -42,23 +42,18 @@ export const Profile = () => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        updateProfileMutation.mutate({ name, avatarUrl });
+        updateProfileMutation.mutate({ name, avatarFile });
     };
 
     const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        // For now, we are just inputting URL text, but if we wanted file upload:
-        // const file = e.target.files?.[0];
-        // if (file) { ... }
-        // But the requirement implies we might just paste a URL or maybe the user wants real upload?
-        // The backend schema supports `avatarUrl` string. 
-        // Let's stick to URL input for simplicity as requested "alterar nome adicionar ou trocar foto", 
-        // usually implies upload but without an upload server, URL is safer. 
-        // However, user experience is better with file upload. 
-        // For this iteration, I'll provide a text input for URL but style it nicely.
+        const file = e.target.files?.[0];
+        if (file) {
+            setAvatarFile(file);
+            // Create a preview URL
+            const url = URL.createObjectURL(file);
+            setPreviewUrl(url);
+        }
     };
-
-    // Simplification: We will just use text input for URL for now, 
-    // as we don't have an S3/storage bucket set up in the plan.
 
     return (
         <div className="min-h-screen bg-background">
@@ -80,37 +75,43 @@ export const Profile = () => {
 
                         {/* Avatar Section */}
                         <div className="flex flex-col items-center space-y-4">
-                            <div className="relative group">
-                                <div className="w-32 h-32 rounded-full border-4 border-background shadow-xl overflow-hidden bg-secondary">
+                            <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                                <div className="w-32 h-32 rounded-full border-4 border-background shadow-xl overflow-hidden bg-secondary relative">
                                     {previewUrl ? (
                                         <img
                                             src={previewUrl}
                                             alt="Preview"
-                                            className="w-full h-full object-cover"
+                                            className="w-full h-full object-cover transition-opacity group-hover:opacity-75"
                                             onError={() => setPreviewUrl('')}
                                         />
                                     ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                                        <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-muted group-hover:bg-muted/80 transition-colors">
                                             <User className="w-12 h-12" />
                                         </div>
                                     )}
+                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <Camera className="w-8 h-8 text-white drop-shadow-md" />
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="w-full max-w-sm">
-                                <label className="text-sm font-medium mb-1 block">URL da Foto</label>
-                                <Input
-                                    placeholder="https://exemplo.com/foto.jpg"
-                                    value={avatarUrl}
-                                    onChange={(e) => {
-                                        setAvatarUrl(e.target.value);
-                                        setPreviewUrl(e.target.value);
-                                    }}
-                                />
-                                <p className="text-xs text-muted-foreground mt-1">
-                                    Cole o link de uma imagem da internet
-                                </p>
-                            </div>
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                className="hidden"
+                                accept="image/*"
+                                onChange={handleAvatarChange}
+                            />
+
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => fileInputRef.current?.click()}
+                            >
+                                <Camera className="w-4 h-4 mr-2" />
+                                Alterar Foto
+                            </Button>
                         </div>
 
                         {/* Name Section */}
