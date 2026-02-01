@@ -137,6 +137,13 @@ export const Dashboard = () => {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" onClick={() => navigate('/profile')}>
+                {user?.avatarUrl ? (
+                  <img src={user.avatarUrl} alt="Profile" className="w-6 h-6 rounded-full object-cover" />
+                ) : (
+                  <User className="w-5 h-5" />
+                )}
+              </Button>
               <Button variant="ghost" size="icon" onClick={() => navigate('/friends')}>
                 <Users className="w-5 h-5" />
               </Button>

@@ -68,6 +68,7 @@ export interface TransactionFormData {
   type: TransactionType;
   category: TransactionCategory;
   description: string;
+  deductFromTarget?: boolean;
 }
 
 export interface RecurringFormData {
@@ -142,7 +143,7 @@ export const formatDateShort = (date: Date): string => {
 
 export const convertToMonthlyRate = (amount: number, frequency: RecurrenceFrequency): number => {
   switch (frequency) {
-    case 'Diario':
+    case 'diario':
       return amount * 30;
     case 'semanal':
       return amount * 4.345;

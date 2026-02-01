@@ -141,6 +141,18 @@ export const login = async (data: AuthCredentials): Promise<AuthResponse> => {
   return handleResponse(res);
 };
 
+export const updateProfile = async (
+  data: { name?: string; avatarUrl?: string },
+  user: UserSession
+): Promise<AuthResponse> => {
+  const res = await fetch(`${API_URL}/api/auth/profile`, {
+    method: 'PUT',
+    headers: authHeaders(user.token),
+    body: JSON.stringify(data),
+  });
+  return handleResponse(res);
+};
+
 export const getGoals = async (user: UserSession): Promise<GoalWithProgress[]> => {
   const res = await fetch(`${API_URL}/api/goals`, {
     headers: authHeaders(user.token),
