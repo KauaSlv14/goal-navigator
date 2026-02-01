@@ -7,39 +7,43 @@ export const decimalToNumber = (value: Decimal | number | null | undefined): num
 };
 
 export const calculateGoalProgress = (params: {
-  targetAmount: number;
-  initialCash: number;
-  initialPix: number;
-  transactions: { amount: number; type: 'cash' | 'pix'; category: 'entrada' | 'saida' }[];
+  targetAmount: number | Decimal;
+  initialCash: number | Decimal;
+  initialPix: number | Decimal;
+  transactions: { amount: number | Decimal; type: 'cash' | 'pix'; category: 'entrada' | 'saida' }[];
 }) => {
+  const targetAmount = decimalToNumber(params.targetAmount);
+  const initialCash = decimalToNumber(params.initialCash);
+  const initialPix = decimalToNumber(params.initialPix);
+
   const cashTransactions = params.transactions.filter((t) => t.type === 'cash');
   const pixTransactions = params.transactions.filter((t) => t.type === 'pix');
 
   const cashBalance =
-    params.initialCash +
+    initialCash +
     cashTransactions.reduce(
-      (sum, tx) => sum + (tx.category === 'entrada' ? tx.amount : -tx.amount),
+      (sum, tx) => sum + (tx.category === 'entrada' ? decimalToNumber(tx.amount) : -decimalToNumber(tx.amount)),
       0
     );
 
   const pixBalance =
-    params.initialPix +
+    initialPix +
     pixTransactions.reduce(
-      (sum, tx) => sum + (tx.category === 'entrada' ? tx.amount : -tx.amount),
+      (sum, tx) => sum + (tx.category === 'entrada' ? decimalToNumber(tx.amount) : -decimalToNumber(tx.amount)),
       0
     );
 
   const totalExpenses = params.transactions
     .filter((t) => t.category === 'saida')
-    .reduce((sum, tx) => sum + tx.amount, 0);
+    .reduce((sum, tx) => sum + decimalToNumber(tx.amount), 0);
 
   const totalCurrent = cashBalance + pixBalance;
 
   // Percentage of net progress
-  const percentage = params.targetAmount > 0 ? Math.min(100, Math.max(0, (totalCurrent / params.targetAmount) * 100)) : 0;
+  const percentage = targetAmount > 0 ? Math.min(100, Math.max(0, (totalCurrent / targetAmount) * 100)) : 0;
 
   // Percentage of expenses relative to target
-  const expensePercentage = params.targetAmount > 0 ? Math.min(100, (totalExpenses / params.targetAmount) * 100) : 0;
+  const expensePercentage = targetAmount > 0 ? Math.min(100, (totalExpenses / targetAmount) * 100) : 0;
 
   const isCompleted = percentage >= 100;
 

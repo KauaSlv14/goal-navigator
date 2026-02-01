@@ -1,5 +1,7 @@
 import { prisma } from '../db.js';
-import { calculateGoalProgress } from '../utils/format.js';
+import { calculateGoalProgress, decimalToNumber } from '../utils/format.js';
+
+
 
 interface FriendInput {
     email: string;
@@ -261,6 +263,17 @@ export const getFriendGoals = async (friendId: string, myUserId: string) => {
         const progress = calculateGoalProgress(goal);
         return {
             ...goal,
+            targetAmount: decimalToNumber(goal.targetAmount),
+            initialCash: decimalToNumber(goal.initialCash),
+            initialPix: decimalToNumber(goal.initialPix),
+            transactions: goal.transactions.map(t => ({
+                ...t,
+                amount: decimalToNumber(t.amount),
+            })),
+            recurringPayments: goal.recurringPayments.map(p => ({
+                ...p,
+                amount: decimalToNumber(p.amount),
+            })),
             ...progress,
         };
     });
