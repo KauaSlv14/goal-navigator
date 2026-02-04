@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import jwt from 'jsonwebtoken';
 import { env } from '../env.js';
-import { addFriend, listFriends, getFriendGoals, listRequests, acceptRequest, rejectRequest, listSentRequests } from '../services/friendService.js';
+import { addFriend, listFriends, getFriendGoals, listRequests, acceptRequest, rejectRequest, listSentRequests, removeFriend } from '../services/friendService.js';
 
 const getUserFromAuth = (authorization?: string) => {
     if (!authorization) return null;
@@ -135,5 +135,24 @@ export async function friendsRoutes(app: FastifyInstance) {
         // FIX: Pass BOTH arguments: friendId and myUserId
         const goals = await getFriendGoals(friendId, user.sub);
         return goals;
+    });
+
+    // Remove friend
+    app.delete('/:friendId', async (request, reply) => {
+        const user = getUserFromAuth(request.headers.authorization);
+        if (!user) {
+            return reply.code(401).send({ error: 'Não autorizado' });
+        }
+
+        const { friendId } = request.params as { friendId: string };
+
+        try {
+            console.log(`[DELETE /friends/${friendId}] User: ${user.sub}`);
+            await removeFriend(user.sub, friendId);
+            return { ok: true };
+        } catch (err: any) {
+            console.error('[DELETE Friend Error]:', err);
+            return reply.code(400).send({ error: err.message || 'Erro ao remover amigo' });
+        }
     });
 }

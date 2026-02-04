@@ -282,3 +282,23 @@ export const getFriendGoals = async (friendId: string, myUserId: string) => {
         };
     });
 };
+
+export const removeFriend = async (userId: string, friendId: string) => {
+    // Delete forward (Me -> Friend)
+    await prisma.friendship.deleteMany({
+        where: {
+            userId,
+            friendId,
+        },
+    });
+
+    // Delete reverse (Friend -> Me)
+    await prisma.friendship.deleteMany({
+        where: {
+            userId: friendId,
+            friendId: userId,
+        },
+    });
+
+    return { ok: true };
+};

@@ -285,6 +285,15 @@ export const rejectFriendRequest = async (requestId: string, user: UserSession) 
   await handleResponse(res);
 };
 
+export const removeFriend = async (friendId: string, user: UserSession) => {
+  const res = await fetch(`${API_URL}/api/friends/${friendId}`, {
+    method: 'DELETE',
+    headers: authHeaders(user.token),
+    body: JSON.stringify({}), // Required by Fastify when Content-Type is application/json
+  });
+  await handleResponse(res);
+};
+
 export const deleteGoal = async (goalId: string, user: UserSession) => {
   const res = await fetch(`${API_URL}/api/goals/${goalId}`, {
     method: 'DELETE',

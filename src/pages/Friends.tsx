@@ -10,6 +10,7 @@ import {
     getSentRequests,
     acceptFriendRequest,
     rejectFriendRequest,
+    removeFriend,
     Friend,
     FriendRequest
 } from '@/lib/api';
@@ -23,8 +24,14 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
-import { ArrowLeft, UserPlus, Users, X, Check, Clock } from 'lucide-react';
+import { ArrowLeft, UserPlus, Users, X, Check, Clock, MoreVertical } from 'lucide-react';
 import { getAvatarUrl } from '@/lib/utils';
 
 export const Friends = () => {
@@ -96,6 +103,17 @@ export const Friends = () => {
         },
         onError: (err: any) => {
             toast.error(err.message || 'Erro ao aceitar solicitação.');
+        },
+    });
+
+    const removeFriendMutation = useMutation({
+        mutationFn: (friendId: string) => removeFriend(friendId, user as UserSession),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['friends'] });
+            toast.success('Amigo removido.');
+        },
+        onError: (err: any) => {
+            toast.error(err.message || 'Erro ao remover amigo.');
         },
     });
 
@@ -280,6 +298,33 @@ export const Friends = () => {
                                                     <p className="text-xs text-muted-foreground">{friend.email}</p>
                                                 </div>
                                             </div>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 p-0"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    >
+                                                        <span className="sr-only">Abrir menu</span>
+                                                        <MoreVertical className="h-4 w-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem
+                                                        className="text-destructive focus:text-destructive cursor-pointer"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            if (confirm(`Remover ${friend.name} da lista de amigos?`)) {
+                                                                removeFriendMutation.mutate(friend.id);
+                                                            }
+                                                        }}
+                                                    >
+                                                        <X className="w-4 h-4 mr-2" />
+                                                        Remover Amizade
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
                                         </div>
                                     ))}
                                 </div>
