@@ -27,7 +27,7 @@ export default function Profile() {
     }, [user, navigate]);
 
     const updateProfileMutation = useMutation({
-        mutationFn: (data: { name: string; avatarFile: File | null }) =>
+        mutationFn: (data: { name: string; avatarFile: File | null; removeAvatar?: boolean }) =>
             updateProfile(data, user as UserSession),
         onSuccess: (data) => {
             // Update local storage
@@ -104,15 +104,36 @@ export default function Profile() {
                                 onChange={handleAvatarChange}
                             />
 
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => fileInputRef.current?.click()}
-                            >
-                                <Camera className="w-4 h-4 mr-2" />
-                                Alterar Foto
-                            </Button>
+                            <div className="flex gap-2">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => fileInputRef.current?.click()}
+                                >
+                                    <Camera className="w-4 h-4 mr-2" />
+                                    Alterar Foto
+                                </Button>
+                                {previewUrl && (
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                        onClick={() => {
+                                            if (confirm('Tem certeza que deseja remover sua foto?')) {
+                                                setAvatarFile(null);
+                                                setPreviewUrl('');
+                                                updateProfileMutation.mutate({ name, avatarFile: null, removeAvatar: true });
+                                            }
+                                        }}
+                                    >
+                                        <div className="flex items-center">
+                                            Remover
+                                        </div>
+                                    </Button>
+                                )}
+                            </div>
                         </div>
 
                         {/* Name Section */}

@@ -142,12 +142,13 @@ export const login = async (data: AuthCredentials): Promise<AuthResponse> => {
 };
 
 export const updateProfile = async (
-  data: { name?: string; avatarFile?: File | null },
+  data: { name?: string; avatarFile?: File | null; removeAvatar?: boolean },
   user: UserSession
 ): Promise<AuthResponse> => {
   const formData = new FormData();
   if (data.name) formData.append('name', data.name);
   if (data.avatarFile) formData.append('avatar', data.avatarFile);
+  if (data.removeAvatar) formData.append('removeAvatar', 'true');
 
   const res = await fetch(`${API_URL}/api/auth/profile`, {
     method: 'PUT',

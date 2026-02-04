@@ -94,7 +94,7 @@ export const authRoutes = async (app: FastifyInstance) => {
     const parts = request.parts();
 
     let name: string | undefined;
-    let avatarUrl: string | undefined;
+    let avatarUrl: string | null | undefined;
 
     for await (const part of parts) {
       if (part.type === 'file' && part.fieldname === 'avatar') {
@@ -106,9 +106,12 @@ export const authRoutes = async (app: FastifyInstance) => {
 
         // Store relative path so frontend can prepend API_URL
         avatarUrl = `/uploads/${filename}`;
-      } else if (part.type === 'field' && part.fieldname === 'name') {
-        // limit name length or validation?
-        name = part.value as string;
+      } else if (part.type === 'field') {
+        if (part.fieldname === 'name') {
+          name = part.value as string;
+        } else if (part.fieldname === 'removeAvatar' && part.value === 'true') {
+          avatarUrl = null;
+        }
       }
     }
 
@@ -116,7 +119,7 @@ export const authRoutes = async (app: FastifyInstance) => {
       where: { id: payload.sub },
       data: {
         ...(name && { name }),
-        ...(avatarUrl && { avatarUrl }),
+        ...(avatarUrl !== undefined && { avatarUrl }),
       },
     });
 
