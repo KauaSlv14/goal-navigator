@@ -104,11 +104,8 @@ export const authRoutes = async (app: FastifyInstance) => {
 
         await pipeline(part.file, fs.createWriteStream(savePath));
 
-        // Use full URL if possible, or relative if frontend handles it.
-        // Assuming API runs on defined port. 
-        // We'll construct a full URL for simplicity in frontend.
-        const baseUrl = `http://${request.hostname}`; // hostname includes port
-        avatarUrl = `${baseUrl}/uploads/${filename}`;
+        // Store relative path so frontend can prepend API_URL
+        avatarUrl = `/uploads/${filename}`;
       } else if (part.type === 'field' && part.fieldname === 'name') {
         // limit name length or validation?
         name = part.value as string;

@@ -9,7 +9,7 @@ import {
   AuthCredentials,
 } from './types';
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3333';
+export const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3333';
 
 interface ApiTransaction {
   id: string;
@@ -217,6 +217,7 @@ export interface Friend {
   id: string;
   name: string;
   email: string;
+  avatarUrl?: string | null;
 }
 
 export const addFriend = async (email: string, user: UserSession): Promise<Friend> => {

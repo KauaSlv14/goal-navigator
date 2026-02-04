@@ -7,7 +7,8 @@ import { CreateGoalModal } from '@/components/CreateGoalModal';
 import { CelebrationModal } from '@/components/CelebrationModal';
 import { AddTransactionModal } from '@/components/AddTransactionModal';
 import { createTransaction, createGoal, getGoals } from '@/lib/api';
-import { formatCurrency, GoalFormData, GoalWithProgress, UserSession, TransactionFormData } from '@/lib/types';
+import { getAvatarUrl } from '@/lib/utils';
+import { UserSession, GoalWithProgress, GoalFormData, formatCurrency, TransactionFormData } from '@/lib/types';
 import { Target, Plus, Wallet, Banknote, Smartphone, LogOut, User, Users } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -136,12 +137,18 @@ export const Dashboard = () => {
                 <p className="text-xs text-muted-foreground">Olá, {user?.name || 'Usuário'}</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" onClick={() => navigate('/profile')}>
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" className="relative h-10 w-10 rounded-full bg-secondary hover:bg-secondary/80 p-0 overflow-hidden" onClick={() => navigate('/profile')}>
                 {user?.avatarUrl ? (
-                  <img src={user.avatarUrl} alt="Profile" className="w-6 h-6 rounded-full object-cover" />
+                  <img
+                    src={getAvatarUrl(user.avatarUrl)}
+                    alt="Profile"
+                    className="w-10 h-10 object-cover"
+                  />
                 ) : (
-                  <User className="w-5 h-5" />
+                  <div className="flex h-full w-full items-center justify-center bg-primary text-primary-foreground font-bold text-lg">
+                    {user?.name?.charAt(0).toUpperCase() || 'U'}
+                  </div>
                 )}
               </Button>
               <Button variant="ghost" size="icon" onClick={() => navigate('/friends')}>

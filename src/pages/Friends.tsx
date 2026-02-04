@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { ArrowLeft, UserPlus, Users, X, Check, Clock } from 'lucide-react';
+import { getAvatarUrl } from '@/lib/utils';
 
 export const Friends = () => {
     const navigate = useNavigate();
@@ -261,8 +262,18 @@ export const Friends = () => {
                                             className="bg-card border border-border/50 rounded-xl p-4 flex items-center justify-between cursor-pointer hover:bg-secondary/50 transition-colors"
                                         >
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                                                    {friend.name.charAt(0).toUpperCase()}
+                                                <div className="relative">
+                                                    {friend.avatarUrl ? (
+                                                        <img
+                                                            src={getAvatarUrl(friend.avatarUrl)}
+                                                            alt={friend.name}
+                                                            className="w-10 h-10 rounded-full object-cover border border-border"
+                                                        />
+                                                    ) : (
+                                                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                                                            {friend.name.charAt(0).toUpperCase()}
+                                                        </div>
+                                                    )}
                                                 </div>
                                                 <div>
                                                     <h3 className="font-semibold text-foreground">{friend.name}</h3>
@@ -354,8 +365,8 @@ export const Friends = () => {
                                             <div
                                                 key={tx.id}
                                                 className={`flex items-center justify-between p-3 rounded-lg border ${tx.category === 'entrada'
-                                                        ? 'border-green-500/30 bg-green-500/5'
-                                                        : 'border-red-500/30 bg-red-500/5'
+                                                    ? 'border-green-500/30 bg-green-500/5'
+                                                    : 'border-red-500/30 bg-red-500/5'
                                                     }`}
                                             >
                                                 <div>

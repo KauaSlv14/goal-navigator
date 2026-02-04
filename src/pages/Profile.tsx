@@ -8,8 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { ArrowLeft, Camera, User, Save, Loader2 } from 'lucide-react';
+import { getAvatarUrl } from "@/lib/utils";
 
-export const Profile = () => {
+export default function Profile() {
     const navigate = useNavigate();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const storedUser = localStorage.getItem('user');
@@ -17,7 +18,7 @@ export const Profile = () => {
 
     const [name, setName] = useState(user?.name || '');
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
-    const [previewUrl, setPreviewUrl] = useState(user?.avatarUrl || '');
+    const [previewUrl, setPreviewUrl] = useState(getAvatarUrl(user?.avatarUrl) || '');
 
     useEffect(() => {
         if (!user?.token) {
@@ -152,4 +153,3 @@ export const Profile = () => {
     );
 };
 
-export default Profile;
