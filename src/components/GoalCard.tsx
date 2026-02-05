@@ -58,11 +58,12 @@ export const GoalCard = ({ goal, onClick, onAddTransaction, index = 0 }: GoalCar
                     e.stopPropagation();
                     onAddTransaction('saida');
                   }}
-                  className="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium text-destructive hover:bg-destructive/10 border border-destructive/20 transition-colors"
-                  title="Adicionar Despesa"
+                  className="flex flex-col items-center gap-0.5 group/expense"
+                  title="Nova Transação"
                 >
-                  <MinusCircle className="w-3.5 h-3.5" />
-                  <span>Despesa</span>
+                  <span className="px-3 py-1 rounded-full text-xs font-bold text-success bg-success/10 border border-success/20 transition-colors group-hover/expense:bg-success/20">
+                    Nova Transação
+                  </span>
                 </button>
               )}
               <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all flex-shrink-0" />

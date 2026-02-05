@@ -75,37 +75,33 @@ export const AddTransactionModal = ({
         <form onSubmit={handleSubmit} className="space-y-5 mt-4">
           {/* Category Toggle */}
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Tipo</Label>
-            <div className="grid grid-cols-2 gap-2">
+            <Label className="text-sm font-medium">Tipo de Transação</Label>
+            <div className="flex bg-muted p-1 rounded-xl">
               <button
                 type="button"
-                onClick={() =>
-                  setFormData((prev) => ({ ...prev, category: 'entrada' }))
-                }
+                onClick={() => setFormData((prev) => ({ ...prev, category: 'entrada' }))}
                 className={cn(
-                  'flex items-center justify-center gap-2 py-3 rounded-lg border-2 transition-all',
+                  'flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-lg transition-all',
                   formData.category === 'entrada'
-                    ? 'border-success bg-success/10 text-success'
-                    : 'border-border bg-background text-muted-foreground hover:border-success/50'
+                    ? 'bg-background text-success shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
                 )}
               >
-                <ArrowDownLeft className="w-5 h-5" />
-                <span className="font-medium">Entrada</span>
+                <ArrowDownLeft className="w-4 h-4" />
+                Entrada
               </button>
               <button
                 type="button"
-                onClick={() =>
-                  setFormData((prev) => ({ ...prev, category: 'saida' }))
-                }
+                onClick={() => setFormData((prev) => ({ ...prev, category: 'saida' }))}
                 className={cn(
-                  'flex items-center justify-center gap-2 py-3 rounded-lg border-2 transition-all',
+                  'flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-lg transition-all',
                   formData.category === 'saida'
-                    ? 'border-destructive bg-destructive/10 text-destructive'
-                    : 'border-border bg-background text-muted-foreground hover:border-destructive/50'
+                    ? 'bg-background text-destructive shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
                 )}
               >
-                <ArrowUpRight className="w-5 h-5" />
-                <span className="font-medium">Saída</span>
+                <ArrowUpRight className="w-4 h-4" />
+                Saída
               </button>
             </div>
           </div>
