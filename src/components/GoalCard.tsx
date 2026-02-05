@@ -66,7 +66,6 @@ export const GoalCard = ({ goal, onClick, onAddTransaction, index = 0 }: GoalCar
                   </span>
                 </button>
               )}
-              <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all flex-shrink-0" />
             </div>
           </div>
 
