@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Target, Mail, Lock, User, ArrowLeft, Loader2 } from 'lucide-react';
+import { Target, Mail, Lock, User, ArrowLeft, Loader2, Gem } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { login, register } from '@/lib/api';
@@ -131,50 +131,54 @@ export const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 relative overflow-hidden">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 -z-10 bg-grid-pattern opacity-[0.03] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-3xl pointer-events-none animate-pulse-glow" />
+
       {/* Logo */}
-      <div className="flex items-center gap-3 mb-8 animate-fade-in-up">
-        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-success flex items-center justify-center shadow-glow">
-          <Target className="w-8 h-8 text-primary-foreground" />
+      <div className="flex flex-col items-center gap-4 mb-8 animate-fade-in-up md:flex-row md:gap-3">
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-emerald-400 flex items-center justify-center shadow-lg shadow-emerald-500/20 ring-1 ring-white/10 group">
+          <Gem className="w-8 h-8 text-white transition-transform duration-500 group-hover:scale-110 group-hover:rotate-12" />
         </div>
-        <div>
-          <h1 className="text-2xl font-extrabold text-gradient">Cofre de Metas</h1>
-          <p className="text-sm text-muted-foreground">Seus sonhos, seu controle</p>
+        <div className="text-center md:text-left">
+          <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Cofre de Metas</h1>
+          <p className="text-sm text-muted-foreground font-medium">Seus sonhos, seu controle</p>
         </div>
       </div>
 
       {/* Auth Card */}
-      <div className="w-full max-w-md card-elevated p-8 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+      <div className="w-full max-w-md card-premium p-8 animate-fade-in-up backdrop-blur-xl border-white/10" style={{ animationDelay: '100ms' }}>
         {mode !== 'login' && (
           <button
             onClick={() => setMode('login')}
-            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6"
+            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6 group"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             Voltar ao login
           </button>
         )}
 
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-foreground">{renderTitle()}</h2>
-          <p className="text-muted-foreground mt-1">{renderSubtitle()}</p>
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-foreground tracking-tight">{renderTitle()}</h2>
+          <p className="text-muted-foreground mt-1 text-sm">{renderSubtitle()}</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           {mode === 'register' && (
             <div className="space-y-2">
               <Label htmlFor="name" className="text-sm font-medium">
                 Nome
               </Label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <div className="relative group">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                 <Input
                   id="name"
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="Seu nome"
-                  className="h-12 pl-11"
+                  className="h-12 pl-11 bg-secondary/50 border-border/50 focus:bg-background transition-all"
                 />
               </div>
             </div>
@@ -184,8 +188,8 @@ export const Auth = () => {
             <Label htmlFor="email" className="text-sm font-medium">
               E-mail
             </Label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <div className="relative group">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
               <Input
                 id="email"
                 name="email"
@@ -193,7 +197,7 @@ export const Auth = () => {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="seu@email.com"
-                className="h-12 pl-11"
+                className="h-12 pl-11 bg-secondary/50 border-border/50 focus:bg-background transition-all"
               />
             </div>
           </div>
@@ -203,8 +207,8 @@ export const Auth = () => {
               <Label htmlFor="password" className="text-sm font-medium">
                 Senha
               </Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <div className="relative group">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                 <Input
                   id="password"
                   name="password"
@@ -212,7 +216,7 @@ export const Auth = () => {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="••••••••"
-                  className="h-12 pl-11"
+                  className="h-12 pl-11 bg-secondary/50 border-border/50 focus:bg-background transition-all"
                 />
               </div>
             </div>
@@ -223,8 +227,8 @@ export const Auth = () => {
               <Label htmlFor="confirmPassword" className="text-sm font-medium">
                 Confirmar Senha
               </Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <div className="relative group">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
                 <Input
                   id="confirmPassword"
                   name="confirmPassword"
@@ -232,7 +236,7 @@ export const Auth = () => {
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   placeholder="••••••••"
-                  className="h-12 pl-11"
+                  className="h-12 pl-11 bg-secondary/50 border-border/50 focus:bg-background transition-all"
                 />
               </div>
             </div>
@@ -243,7 +247,7 @@ export const Auth = () => {
               <button
                 type="button"
                 onClick={() => setMode('forgot')}
-                className="text-sm text-primary hover:underline"
+                className="text-sm text-primary hover:text-primary/80 transition-colors font-medium"
               >
                 Esqueci minha senha
               </button>
@@ -252,9 +256,7 @@ export const Auth = () => {
 
           <Button
             type="submit"
-            variant="gradient"
-            size="lg"
-            className="w-full"
+            className="w-full h-12 btn-premium text-base shadow-lg shadow-emerald-500/20"
             disabled={loading}
           >
             {loading ? (
@@ -270,12 +272,12 @@ export const Auth = () => {
         </form>
 
         {mode === 'login' && (
-          <div className="mt-6 text-center">
+          <div className="mt-8 text-center pt-6 border-t border-border/50">
             <p className="text-sm text-muted-foreground">
               Ainda não tem conta?{' '}
               <button
                 onClick={() => setMode('register')}
-                className="text-primary font-semibold hover:underline"
+                className="text-primary font-bold hover:underline ml-1"
               >
                 Criar conta grátis
               </button>

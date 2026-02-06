@@ -178,11 +178,14 @@ export const GoalDetails = () => {
         </div>
       </header>
 
-      <main className="container max-w-2xl mx-auto px-4 py-6 space-y-6">
+      <main className="container max-w-2xl mx-auto px-4 py-8 space-y-8 relative">
+        <div className="absolute inset-0 -z-10 bg-grid-pattern opacity-[0.03] pointer-events-none" />
+
         {/* Goal Header */}
-        <div className="card-elevated overflow-hidden animate-fade-in-up">
+        <div className="card-premium overflow-hidden animate-fade-in-up border-0 ring-1 ring-border/50">
           {goal.imageUrl && (
-            <div className="h-40 overflow-hidden">
+            <div className="h-48 overflow-hidden relative">
+              <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent z-10" />
               <img
                 src={goal.imageUrl}
                 alt={goal.name}
@@ -190,7 +193,7 @@ export const GoalDetails = () => {
               />
             </div>
           )}
-          <div className="p-5">
+          <div className="p-6 relative z-20 -mt-12">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h1 className="text-2xl font-bold text-foreground">{goal.name}</h1>
@@ -234,22 +237,22 @@ export const GoalDetails = () => {
             </div>
 
             {/* Balances */}
-            <div className="grid grid-cols-2 gap-3 mt-5">
-              <div className="bg-secondary/50 rounded-lg p-3">
-                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+            <div className="grid grid-cols-2 gap-4 mt-6">
+              <div className="bg-secondary/30 rounded-xl p-4 border border-border/50">
+                <div className="flex items-center gap-2 text-muted-foreground mb-2">
                   <Banknote className="w-4 h-4" />
-                  <span className="text-xs font-medium">Dinheiro</span>
+                  <span className="text-xs font-semibold uppercase tracking-wider">Dinheiro</span>
                 </div>
-                <p className="font-bold text-foreground">
+                <p className="font-bold text-lg text-foreground">
                   {formatCurrency(goal.currentCash)}
                 </p>
               </div>
-              <div className="bg-secondary/50 rounded-lg p-3">
-                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+              <div className="bg-secondary/30 rounded-xl p-4 border border-border/50">
+                <div className="flex items-center gap-2 text-muted-foreground mb-2">
                   <Smartphone className="w-4 h-4" />
-                  <span className="text-xs font-medium">Pix</span>
+                  <span className="text-xs font-semibold uppercase tracking-wider">Pix</span>
                 </div>
-                <p className="font-bold text-foreground">
+                <p className="font-bold text-lg text-foreground">
                   {formatCurrency(goal.currentPix)}
                 </p>
               </div>
@@ -257,9 +260,7 @@ export const GoalDetails = () => {
 
             {/* Add Transaction Button */}
             <Button
-              variant="gradient"
-              size="lg"
-              className="w-full mt-5"
+              className="w-full mt-6 h-12 btn-premium text-base"
               onClick={() => setIsTransactionModalOpen(true)}
             >
               <Plus className="w-5 h-5 mr-2" />
@@ -278,29 +279,31 @@ export const GoalDetails = () => {
         {/* Tabs */}
         <div className="animate-fade-in-up" style={{ animationDelay: '200ms' }}>
           <Tabs defaultValue="transactions" className="w-full">
-            <TabsList className="w-full grid grid-cols-2 h-12">
-              <TabsTrigger value="transactions" className="gap-2">
+            <TabsList className="w-full grid grid-cols-2 h-12 bg-secondary/50 p-1 rounded-xl">
+              <TabsTrigger value="transactions" className="gap-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
                 <History className="w-4 h-4" />
                 Transações
               </TabsTrigger>
-              <TabsTrigger value="recurring" className="gap-2">
+              <TabsTrigger value="recurring" className="gap-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
                 <RepeatIcon className="w-4 h-4" />
                 Recorrentes
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="transactions" className="mt-4">
-              <div className="card-elevated p-4">
+            <TabsContent value="transactions" className="mt-6">
+              <div className="card-premium p-6">
                 {goal.transactions.length > 0 ? (
-                  <div className="divide-y divide-border">
+                  <div className="divide-y divide-border/50">
                     {goal.transactions.map((transaction) => (
                       <TransactionItem key={transaction.id} transaction={transaction} />
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-8">
-                    <History className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-muted-foreground">
+                  <div className="text-center py-12">
+                    <div className="w-16 h-16 rounded-full bg-secondary/50 flex items-center justify-center mx-auto mb-4">
+                      <History className="w-8 h-8 text-muted-foreground/50" />
+                    </div>
+                    <p className="text-muted-foreground font-medium">
                       Nenhuma transação registrada
                     </p>
                   </div>
@@ -308,18 +311,20 @@ export const GoalDetails = () => {
               </div>
             </TabsContent>
 
-            <TabsContent value="recurring" className="mt-4">
-              <div className="card-elevated p-4">
+            <TabsContent value="recurring" className="mt-6">
+              <div className="card-premium p-6">
                 {goal.recurringPayments.length > 0 ? (
-                  <div className="divide-y divide-border">
+                  <div className="divide-y divide-border/50">
                     {goal.recurringPayments.map((payment) => (
                       <RecurringPaymentItem key={payment.id} payment={payment} />
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-8">
-                    <RepeatIcon className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-muted-foreground">
+                  <div className="text-center py-12">
+                    <div className="w-16 h-16 rounded-full bg-secondary/50 flex items-center justify-center mx-auto mb-4">
+                      <RepeatIcon className="w-8 h-8 text-muted-foreground/50" />
+                    </div>
+                    <p className="text-muted-foreground font-medium">
                       Nenhum pagamento recorrente
                     </p>
                   </div>
