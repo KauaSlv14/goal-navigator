@@ -298,6 +298,16 @@ export const deleteGoal = async (goalId: string, user: UserSession) => {
   const res = await fetch(`${API_URL}/api/goals/${goalId}`, {
     method: 'DELETE',
     headers: authHeaders(user.token),
+    body: JSON.stringify({}),
+  });
+  await handleResponse(res);
+};
+
+export const deleteRecurringPayment = async (goalId: string, recurringId: string, user: UserSession) => {
+  const res = await fetch(`${API_URL}/api/goals/${goalId}/recurring/${recurringId}`, {
+    method: 'DELETE',
+    headers: authHeaders(user.token),
+    body: JSON.stringify({}),
   });
   await handleResponse(res);
 };

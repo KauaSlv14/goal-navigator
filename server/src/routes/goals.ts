@@ -8,6 +8,7 @@ import {
   getGoalsWithProgress,
   getNextRunDate,
   deleteGoal,
+  deleteRecurringPayment,
 } from '../services/goalService';
 import { processDueRecurrences } from '../services/recurringService';
 import jwt from 'jsonwebtoken';
@@ -151,6 +152,25 @@ export const goalsRoutes = async (app: FastifyInstance) => {
       const rec = await addRecurringPaymentToGoal(params.id, { ...parsed.data, userEmail: user.email, userName: user.name });
       if (!rec) return reply.code(404).send({ error: 'Meta não encontrada' });
       return rec;
+    } catch (err: any) {
+      if (err?.message === 'USER_NOT_FOUND') {
+        return reply.code(401).send({ error: 'Usuário não encontrado' });
+      }
+      throw err;
+    }
+  });
+
+  app.delete('/:id/recurring/:recurringId', async (request, reply) => {
+    const user = getUserFromAuth(request.headers.authorization);
+    if (!user?.email) {
+      return reply.code(401).send({ error: 'Não autorizado' });
+    }
+    const params = z.object({ id: z.string().min(1), recurringId: z.string().min(1) }).parse(request.params);
+
+    try {
+      const deleted = await deleteRecurringPayment(params.id, params.recurringId, user.email, user.name);
+      if (!deleted) return reply.code(404).send({ error: 'Recorrência não encontrada' });
+      return { ok: true };
     } catch (err: any) {
       if (err?.message === 'USER_NOT_FOUND') {
         return reply.code(401).send({ error: 'Usuário não encontrado' });

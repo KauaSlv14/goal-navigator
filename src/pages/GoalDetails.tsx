@@ -32,7 +32,7 @@ import {
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createRecurringPayment, createTransaction, deleteGoal as deleteGoalApi, getGoalDetails } from '@/lib/api';
+import { createRecurringPayment, createTransaction, deleteGoal as deleteGoalApi, getGoalDetails, deleteRecurringPayment } from '@/lib/api';
 import { AddRecurringModal } from '@/components/AddRecurringModal';
 
 export const GoalDetails = () => {
@@ -93,6 +93,20 @@ export const GoalDetails = () => {
       toast.success('Recorrência criada!');
     },
     onError: (err: any) => toast.error(err?.message ?? 'Não foi possível criar a recorrência'),
+  });
+
+  const deleteRecurringMutation = useMutation({
+    mutationFn: (recurringId: string) => deleteRecurringPayment(id!, recurringId, user as UserSession),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['goal', id, user?.email] });
+      const updated = await queryClient.fetchQuery({
+        queryKey: ['goal', id, user?.email],
+        queryFn: () => getGoalDetails(id!, user as UserSession),
+      });
+      setGoal(updated);
+      toast.success('Recorrência removida!');
+    },
+    onError: (err: any) => toast.error(err?.message ?? 'Não foi possível remover a recorrência'),
   });
 
   useEffect(() => {
@@ -316,7 +330,15 @@ export const GoalDetails = () => {
                 {goal.recurringPayments.length > 0 ? (
                   <div className="divide-y divide-border/50">
                     {goal.recurringPayments.map((payment) => (
-                      <RecurringPaymentItem key={payment.id} payment={payment} />
+                      <RecurringPaymentItem
+                        key={payment.id}
+                        payment={payment}
+                        onDelete={(recurringId) => {
+                          if (confirm('Tem certeza que deseja remover esta recorrência?')) {
+                            deleteRecurringMutation.mutate(recurringId);
+                          }
+                        }}
+                      />
                     ))}
                   </div>
                 ) : (

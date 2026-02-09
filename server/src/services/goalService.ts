@@ -154,6 +154,22 @@ export const deleteGoal = async (goalId: string, userEmail: string, userName?: s
   return true;
 };
 
+export const deleteRecurringPayment = async (goalId: string, recurringId: string, userEmail: string, userName?: string) => {
+  const user = await ensureUser(userEmail, userName);
+  if (!user) throw new Error('USER_NOT_FOUND');
+
+  // Verify goal belongs to user
+  const goalExists = await prisma.goal.findFirst({ where: { id: goalId, userId: user.id } });
+  if (!goalExists) return false;
+
+  // Verify recurring payment belongs to goal
+  const recurringExists = await prisma.recurringPayment.findFirst({ where: { id: recurringId, goalId } });
+  if (!recurringExists) return false;
+
+  await prisma.recurringPayment.delete({ where: { id: recurringId } });
+  return true;
+};
+
 export const getNextRunDate = (opts: {
   frequency: RecurrenceFrequency;
   dayOfMonth?: number;

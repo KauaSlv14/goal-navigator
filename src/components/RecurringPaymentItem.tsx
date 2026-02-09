@@ -4,18 +4,20 @@ import {
   formatDate,
   frequencyLabels,
 } from '@/lib/types';
-import { RepeatIcon, Banknote, Smartphone, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
+import { RepeatIcon, Banknote, Smartphone, ArrowDownLeft, ArrowUpRight, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 interface RecurringPaymentItemProps {
   payment: RecurringPayment;
+  onDelete?: (id: string) => void;
 }
 
-export const RecurringPaymentItem = ({ payment }: RecurringPaymentItemProps) => {
+export const RecurringPaymentItem = ({ payment, onDelete }: RecurringPaymentItemProps) => {
   const isIncome = payment.category === 'entrada';
 
   return (
-    <div className="flex items-center justify-between py-3 border-b border-border/50 last:border-0">
+    <div className="flex items-center justify-between py-3 border-b border-border/50 last:border-0 group/item">
       <div className="flex items-center gap-3">
         <div
           className={cn(
@@ -53,24 +55,36 @@ export const RecurringPaymentItem = ({ payment }: RecurringPaymentItemProps) => 
           </div>
         </div>
       </div>
-      <div className="text-right">
-        <span
-          className={cn(
-            'font-bold flex items-center gap-1',
-            isIncome ? 'text-success' : 'text-warning'
-          )}
-        >
-          {isIncome ? (
-            <ArrowDownLeft className="w-4 h-4" />
-          ) : (
-            <ArrowUpRight className="w-4 h-4" />
-          )}
-          {formatCurrency(payment.amount)}
-        </span>
-        {payment.lastExecution && (
-          <span className="text-xs text-muted-foreground">
-            Último: {formatDate(payment.lastExecution)}
+      <div className="flex items-center gap-4">
+        <div className="text-right">
+          <span
+            className={cn(
+              'font-bold flex items-center gap-1 justify-end',
+              isIncome ? 'text-success' : 'text-warning'
+            )}
+          >
+            {isIncome ? (
+              <ArrowDownLeft className="w-4 h-4" />
+            ) : (
+              <ArrowUpRight className="w-4 h-4" />
+            )}
+            {formatCurrency(payment.amount)}
           </span>
+          {payment.lastExecution && (
+            <span className="text-xs text-muted-foreground">
+              Último: {formatDate(payment.lastExecution)}
+            </span>
+          )}
+        </div>
+        {onDelete && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="opacity-0 group-hover/item:opacity-100 transition-opacity text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-8 w-8"
+            onClick={() => onDelete(payment.id)}
+          >
+            <Trash2 className="w-4 h-4" />
+          </Button>
         )}
       </div>
     </div>
