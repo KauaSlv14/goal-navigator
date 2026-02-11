@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Target, Mail, Lock, User, ArrowLeft, Loader2, Gem } from 'lucide-react';
+import { Target, Mail, Lock, User, ArrowLeft, Loader2 } from 'lucide-react';
+import { StaircaseUp } from '@/components/icons/StaircaseUp';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { login, register } from '@/lib/api';
@@ -139,7 +140,7 @@ export const Auth = () => {
       {/* Logo */}
       <div className="flex flex-col items-center gap-4 mb-8 animate-fade-in-up md:flex-row md:gap-3">
         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-emerald-400 flex items-center justify-center shadow-lg shadow-emerald-500/20 ring-1 ring-white/10 group">
-          <Gem className="w-8 h-8 text-white transition-transform duration-500 group-hover:scale-110 group-hover:rotate-12" />
+          <StaircaseUp className="w-8 h-8 text-white transition-transform duration-500 group-hover:scale-110 group-hover:rotate-12" />
         </div>
         <div className="text-center md:text-left">
           <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Cofre de Metas</h1>

@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
-import { Target, ArrowRight, Wallet, TrendingUp, Bell, Shield, Gem, CheckCircle2 } from 'lucide-react';
+import { Target, ArrowRight, Wallet, TrendingUp, Bell, Shield, CheckCircle2 } from 'lucide-react';
+import { StaircaseUp } from '@/components/icons/StaircaseUp';
 import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
@@ -40,7 +41,7 @@ const Index = () => {
           {/* Logo */}
           <div className="flex justify-center mb-8 animate-fade-in-up">
             <div className="w-24 h-24 rounded-[2rem] bg-gradient-to-br from-primary to-emerald-400 flex items-center justify-center shadow-2xl shadow-emerald-500/30 ring-1 ring-white/20 group cursor-pointer transition-transform hover:scale-105 duration-500">
-              <Gem className="w-12 h-12 text-white drop-shadow-md group-hover:rotate-12 transition-transform duration-500" />
+              <StaircaseUp className="w-12 h-12 text-white drop-shadow-md group-hover:rotate-12 transition-transform duration-500" />
             </div>
           </div>
 
@@ -107,7 +108,7 @@ const Index = () => {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-emerald-400 flex items-center justify-center">
-                <Gem className="w-4 h-4 text-white" />
+                <StaircaseUp className="w-4 h-4 text-white" />
               </div>
               <span className="font-bold text-foreground tracking-tight">Cofre de Metas</span>
             </div>
