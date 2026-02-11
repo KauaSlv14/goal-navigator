@@ -22,6 +22,8 @@ export interface RecurringPayment {
   frequency: RecurrenceFrequency;
   dayOfMonth?: number;
   dayOfWeek?: number;
+  startDate?: Date;
+  endDate?: Date;
   nextExecution: Date;
   lastExecution?: Date;
   isActive: boolean;
@@ -78,8 +80,11 @@ export interface RecurringFormData {
   category: TransactionCategory;
   frequency: RecurrenceFrequency;
   dayOfMonth?: number;
+
   dayOfWeek?: number;
   startsAt?: string;
+  startDate?: string;
+  endDate?: string;
 }
 
 export interface User {

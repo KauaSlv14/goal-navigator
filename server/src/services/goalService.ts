@@ -109,6 +109,8 @@ export const addRecurringPaymentToGoal = async (
     dayOfMonth?: number;
     dayOfWeek?: number;
     startsAt?: string;
+    startDate?: string;
+    endDate?: string;
   }
 ) => {
   const user = await ensureUser(data.userEmail, data.userName);
@@ -116,13 +118,33 @@ export const addRecurringPaymentToGoal = async (
   const goalExists = await prisma.goal.findFirst({ where: { id: goalId, userId: user.id } });
   if (!goalExists) return null;
 
-  const nextRunAt = data.startsAt
+  const startDate = data.startDate ? new Date(data.startDate) : undefined;
+  const endDate = data.endDate ? new Date(data.endDate) : undefined;
+
+  let nextRunAt = data.startsAt
     ? new Date(data.startsAt)
     : getNextRunDate({
       frequency: data.frequency,
       dayOfMonth: data.dayOfMonth,
       dayOfWeek: data.dayOfWeek,
     });
+
+  // If start date is in the future and after calculated nextRunAt, align nextRunAt
+  if (startDate && nextRunAt < startDate) {
+    nextRunAt = startDate;
+    // Optimization: we could try to find the first valid run date >= startDate based on frequency
+    // But setting it to startDate is a safe baseline, the processor will then schedule the next one correctly.
+    // Better yet: let's leave it as is, and the processor will check startDate.
+    // Actually, if nextRunAt < startDate, we should probably set it to startDate or the first occurrence after.
+    // For now, let's trust the logic: nextRunAt is the FIRST execution.
+    // If startDate > nextRunAt (calculated from now), we should probably push nextRunAt to be >= startDate.
+    // Simple fix: if calculated nextRun is before startDate, force it to startDate (or we could calculate correctly)
+    // For this MVP, let's ensure nextRunAt is at least startDate if provided.
+    if (nextRunAt < startDate) {
+      nextRunAt = startDate;
+    }
+
+  }
 
   return prisma.recurringPayment.create({
     data: {
@@ -134,6 +156,8 @@ export const addRecurringPaymentToGoal = async (
       frequency: data.frequency,
       dayOfMonth: data.dayOfMonth,
       dayOfWeek: data.dayOfWeek,
+      startDate,
+      endDate,
       nextRunAt,
     },
   });

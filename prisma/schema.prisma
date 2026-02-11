@@ -90,6 +90,8 @@ model RecurringPayment {
   frequency  RecurrenceFrequency
   dayOfMonth Int?
   dayOfWeek  Int?
+  startDate  DateTime?
+  endDate    DateTime?
   nextRunAt  DateTime
   lastRunAt  DateTime?
   isActive   Boolean             @default(true)

@@ -82,12 +82,13 @@ export const AddRecurringModal = ({ isOpen, onClose, onSubmit }: AddRecurringMod
             min={1}
             max={31}
             value={formData.dayOfMonth ?? ''}
-            onChange={(e) =>
+            onChange={(e) => {
+              const val = e.target.value;
               setFormData((prev) => ({
                 ...prev,
-                dayOfMonth: parseInt(e.target.value, 10) || 1,
-              }))
-            }
+                dayOfMonth: val === '' ? undefined : parseInt(val, 10),
+              }));
+            }}
             className="h-11"
           />
         </div>
@@ -269,6 +270,43 @@ export const AddRecurringModal = ({ isOpen, onClose, onSubmit }: AddRecurringMod
           </div>
 
           {renderScheduleField()}
+
+          <div className="flex gap-3">
+            <div className="space-y-2 flex-1">
+              <Label htmlFor="startDate" className="text-sm font-medium">
+                Data de Início (opcional)
+              </Label>
+              <Input
+                id="startDate"
+                type="date"
+                value={formData.startDate || ''}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    startDate: e.target.value,
+                  }))
+                }
+                className="h-11"
+              />
+            </div>
+            <div className="space-y-2 flex-1">
+              <Label htmlFor="endDate" className="text-sm font-medium">
+                Data Final (opcional)
+              </Label>
+              <Input
+                id="endDate"
+                type="date"
+                value={formData.endDate || ''}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    endDate: e.target.value,
+                  }))
+                }
+                className="h-11"
+              />
+            </div>
+          </div>
 
           <div className="flex gap-3 pt-2">
             <Button
