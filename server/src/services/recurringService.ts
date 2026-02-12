@@ -1,6 +1,6 @@
-import { prisma } from '../db';
-import { getNextRunDate } from './goalService';
-import { decimalToNumber } from '../utils/format';
+import { prisma } from '../db.js';
+import { getNextRunDate } from './goalService.js';
+import { decimalToNumber } from '../utils/format.js';
 
 export const processDueRecurrences = async () => {
   const now = new Date();

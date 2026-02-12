@@ -1,7 +1,7 @@
-import { prisma } from '../db';
-import { decimalToNumber, calculateGoalProgress } from '../utils/format';
-import { ensureUser } from './userService';
-import { TransactionType, TransactionCategory, RecurrenceFrequency } from '../../generated/prisma';
+import { prisma } from '../db.js';
+import { decimalToNumber, calculateGoalProgress } from '../utils/format.js';
+import { ensureUser } from './userService.js';
+import { TransactionType, TransactionCategory, RecurrenceFrequency } from '../../../generated/prisma/index.js';
 
 type TransactionInput = {
   amount: number;

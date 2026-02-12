@@ -48,6 +48,10 @@ const start = async () => {
   }
 };
 
-start();
+import { fileURLToPath } from 'url';
 
-export type AppInstance = ReturnType<typeof buildServer>;
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  start();
+}
+
+export { buildServer };

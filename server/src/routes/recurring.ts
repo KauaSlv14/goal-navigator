@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import { processDueRecurrences } from '../services/recurringService';
+import { processDueRecurrences } from '../services/recurringService.js';
 
 export const recurringRoutes = async (app: FastifyInstance) => {
   app.post('/run', async () => {
