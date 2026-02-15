@@ -9,10 +9,10 @@ import {
   getNextRunDate,
   deleteGoal,
   deleteRecurringPayment,
-} from '../services/goalService';
-import { processDueRecurrences } from '../services/recurringService';
+} from '../services/goalService.js';
+import { processDueRecurrences } from '../services/recurringService.js';
 import jwt from 'jsonwebtoken';
-import { env } from '../env';
+import { env } from '../env.js';
 
 const getUserFromAuth = (authorization?: string) => {
   if (!authorization) return null;

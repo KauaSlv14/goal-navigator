@@ -1,4 +1,4 @@
-import { prisma } from '../db';
+import { prisma } from '../db.js';
 
 export const ensureUser = async (email: string, name?: string) => {
   const existing = await prisma.user.findFirst({

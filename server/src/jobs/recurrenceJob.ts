@@ -1,6 +1,6 @@
 import cron from 'node-cron';
 import { FastifyInstance } from 'fastify';
-import { processDueRecurrences } from '../services/recurringService';
+import { processDueRecurrences } from '../services/recurringService.js';
 
 export const registerRecurrenceJob = (app: FastifyInstance) => {
   // Run once on startup
