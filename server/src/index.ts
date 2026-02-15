@@ -3,6 +3,7 @@ import multipart from '@fastify/multipart';
 import fastifyStatic from '@fastify/static';
 import path from 'path';
 import cors from '@fastify/cors';
+import fs from 'fs';
 import { goalsRoutes } from './routes/goals.js';
 import { recurringRoutes } from './routes/recurring.js';
 import { authRoutes } from './routes/auth.js';
@@ -22,8 +23,19 @@ const buildServer = () => {
   });
 
   app.register(multipart);
+  
+  // Use /tmp in production, local uploads dir in development
+  const uploadsDir = process.env.NODE_ENV === 'production' 
+    ? path.join('/tmp', 'uploads')
+    : path.join(process.cwd(), 'server', 'uploads');
+  
+  // Ensure uploads directory exists
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+  
   app.register(fastifyStatic, {
-    root: path.join(process.cwd(), 'server', 'uploads'),
+    root: uploadsDir,
     prefix: '/uploads/',
   });
 

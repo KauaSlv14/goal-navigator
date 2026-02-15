@@ -4,10 +4,6 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../db.js';
 import { env } from '../env.js';
-import { pipeline } from 'stream/promises';
-import fs from 'fs';
-import path from 'path';
-import { randomUUID } from 'crypto';
 
 const tokenForUser = (user: { id: string; email: string; name: string }) =>
   jwt.sign({ sub: user.id, email: user.email, name: user.name }, env.jwtSecret, { expiresIn: '7d' });
@@ -96,44 +92,51 @@ export const authRoutes = async (app: FastifyInstance) => {
     let name: string | undefined;
     let avatarUrl: string | null | undefined;
 
-    for await (const part of parts) {
-      if (part.type === 'file' && part.fieldname === 'avatar') {
-        const ext = hDetermineExtension(part.mimetype) || '.jpg';
-        const filename = `${randomUUID()}${ext}`;
-        const savePath = path.join(process.cwd(), 'server', 'uploads', filename);
+    try {
+      for await (const part of parts) {
+        if (part.type === 'file' && part.fieldname === 'avatar') {
+          try {
+            // Read file into buffer
+            const chunks: Buffer[] = [];
+            for await (const chunk of part.file) {
+              chunks.push(chunk);
+            }
+            const buffer = Buffer.concat(chunks);
 
-        await pipeline(part.file, fs.createWriteStream(savePath));
+            // Max 5MB for avatar
+            if (buffer.length > 5 * 1024 * 1024) {
+              return reply.code(400).send({ error: 'Imagem muito grande. Máximo 5MB' });
+            }
 
-        // Store relative path so frontend can prepend API_URL
-        avatarUrl = `/uploads/${filename}`;
-      } else if (part.type === 'field') {
-        if (part.fieldname === 'name') {
-          name = part.value as string;
-        } else if (part.fieldname === 'removeAvatar' && part.value === 'true') {
-          avatarUrl = null;
+            // Convert to base64 with media type
+            const base64 = buffer.toString('base64');
+            const mimeType = part.mimetype || 'image/jpeg';
+            avatarUrl = `data:${mimeType};base64,${base64}`;
+          } catch (fileErr) {
+            app.log.error(fileErr, 'Erro ao processar avatar');
+            return reply.code(500).send({ error: 'Erro ao fazer upload da imagem', details: (fileErr as any)?.message });
+          }
+        } else if (part.type === 'field') {
+          if (part.fieldname === 'name') {
+            name = part.value as string;
+          } else if (part.fieldname === 'removeAvatar' && part.value === 'true') {
+            avatarUrl = null;
+          }
         }
       }
+
+      const updated = await prisma.user.update({
+        where: { id: payload.sub },
+        data: {
+          ...(name && { name }),
+          ...(avatarUrl !== undefined && { avatarUrl }),
+        },
+      });
+
+      return { user: { id: updated.id, email: updated.email, name: updated.name, avatarUrl: updated.avatarUrl } };
+    } catch (err: any) {
+      app.log.error(err, 'Erro ao atualizar perfil');
+      return reply.code(500).send({ error: 'Erro ao atualizar perfil', message: err?.message });
     }
-
-    const updated = await prisma.user.update({
-      where: { id: payload.sub },
-      data: {
-        ...(name && { name }),
-        ...(avatarUrl !== undefined && { avatarUrl }),
-      },
-    });
-
-    return { user: { id: updated.id, email: updated.email, name: updated.name, avatarUrl: updated.avatarUrl } };
   });
-
-  // Helper for extension
-  function hDetermineExtension(mimetype: string) {
-    switch (mimetype) {
-      case 'image/jpeg': return '.jpg';
-      case 'image/png': return '.png';
-      case 'image/webp': return '.webp';
-      case 'image/gif': return '.gif';
-      default: return '.jpg';
-    }
-  }
 };
