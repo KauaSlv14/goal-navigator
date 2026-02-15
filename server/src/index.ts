@@ -31,7 +31,7 @@ const buildServer = () => {
   app.get('/api/health', async () => {
     try {
       await prisma.$queryRaw`SELECT 1`;
-      return { status: 'ok', message: 'Servidor e banco de dados estão online' };
+      return { status: 'ok', ver: '2.0', message: 'Servidor e banco de dados estão online' };
     } catch (error) {
       return { status: 'error', message: 'Banco de dados indisponível', error: (error as any).message };
     }
