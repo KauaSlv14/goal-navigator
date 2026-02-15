@@ -1,22 +1,19 @@
-# Welcome to your Lovable project
+# Cofre de Metas
 
-## Project info
+Gerencie suas metas financeiras e sonhos com elegância.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Sobre o Projeto
 
-## How can I edit this code?
+**Cofre de Metas** é um aplicativo web moderno para gerenciar objetivos financeiros pessoais com recursos como:
+- Múltiplas metas com rastreamento de progresso
+- Controle de saldos (físico e Pix)
+- Projeções inteligentes
+- Pagamentos recorrentes
+- Compartilhamento de metas com amigos
 
-There are several ways of editing your application.
+## Como Contribuir
 
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+Se você quer trabalhar no projeto:
 
 The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 

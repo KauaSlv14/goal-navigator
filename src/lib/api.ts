@@ -9,7 +9,12 @@ import {
   AuthCredentials,
 } from './types';
 
-export const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3333';
+// In development, use VITE_API_URL (e.g., http://localhost:3333)
+// In production (Vercel), use relative paths (empty string, so /api/... works)
+const isDev = import.meta.env.DEV;
+export const API_URL = isDev 
+  ? (import.meta.env.VITE_API_URL || 'http://localhost:3333')
+  : '';
 
 interface ApiTransaction {
   id: string;
@@ -69,6 +74,19 @@ const handleResponse = async (res: Response) => {
   return res.json();
 };
 
+const handleFetch = async (url: string, options?: RequestInit) => {
+  try {
+    const res = await fetch(url, options);
+    return handleResponse(res);
+  } catch (error: any) {
+    // If it's a network error or the server is down
+    if (error.message.includes('Failed to fetch') || !navigator.onLine) {
+      throw new Error('Erro de conexão. Verifique sua internet e se o servidor está online.');
+    }
+    throw error;
+  }
+};
+
 const mapRecurring = (rec: ApiRecurring): RecurringPayment => ({
   id: rec.id,
   goalId: rec.goalId,
@@ -124,21 +142,19 @@ const authHeaders = (token?: string) =>
     : { 'Content-Type': 'application/json' };
 
 export const register = async (data: AuthCredentials): Promise<AuthResponse> => {
-  const res = await fetch(`${API_URL}/api/auth/register`, {
+  return handleFetch(`${API_URL}/api/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
-  return handleResponse(res);
 };
 
 export const login = async (data: AuthCredentials): Promise<AuthResponse> => {
-  const res = await fetch(`${API_URL}/api/auth/login`, {
+  return handleFetch(`${API_URL}/api/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
-  return handleResponse(res);
 };
 
 export const updateProfile = async (
