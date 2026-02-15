@@ -9,6 +9,7 @@ import { authRoutes } from './routes/auth.js';
 import { friendsRoutes } from './routes/friends.js';
 import { env } from './env.js';
 import { registerRecurrenceJob } from './jobs/recurrenceJob.js';
+import { prisma } from './db.js';
 
 const buildServer = () => {
   const app = Fastify({
@@ -24,6 +25,16 @@ const buildServer = () => {
   app.register(fastifyStatic, {
     root: path.join(process.cwd(), 'server', 'uploads'),
     prefix: '/uploads/',
+  });
+
+  // Health check endpoint
+  app.get('/api/health', async () => {
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+      return { status: 'ok', message: 'Servidor e banco de dados estão online' };
+    } catch (error) {
+      return { status: 'error', message: 'Banco de dados indisponível', error: (error as any).message };
+    }
   });
 
   app.register(authRoutes, { prefix: '/api/auth' });

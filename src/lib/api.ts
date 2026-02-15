@@ -67,11 +67,23 @@ interface ApiGoal {
 
 const handleResponse = async (res: Response) => {
   if (!res.ok) {
-    const data = await res.json().catch(() => ({}));
-    const message = data?.error || res.statusText || 'Erro na requisição';
-    throw new Error(message);
+    let message = 'Erro na requisição';
+    try {
+      const data = await res.json();
+      message = data?.error || data?.message || res.statusText || message;
+    } catch (e) {
+      // Se não conseguir parsear JSON, usa statusText
+      message = res.statusText || message;
+    }
+    const error = new Error(message);
+    (error as any).status = res.status;
+    throw error;
   }
-  return res.json();
+  try {
+    return await res.json();
+  } catch (e) {
+    throw new Error('Erro ao processar resposta do servidor');
+  }
 };
 
 const handleFetch = async (url: string, options?: RequestInit) => {
@@ -79,10 +91,15 @@ const handleFetch = async (url: string, options?: RequestInit) => {
     const res = await fetch(url, options);
     return handleResponse(res);
   } catch (error: any) {
-    // If it's a network error or the server is down
-    if (error.message.includes('Failed to fetch') || !navigator.onLine) {
-      throw new Error('Erro de conexão. Verifique sua internet e se o servidor está online.');
+    // Network error
+    if (error.message.includes('Failed to fetch')) {
+      throw new Error('Erro de conexão. Verifique sua internet e tente novamente.');
     }
+    // Offline
+    if (!navigator.onLine) {
+      throw new Error('Você está offline. Verifique sua conexão de internet.');
+    }
+    // Re-throw the error as is
     throw error;
   }
 };
