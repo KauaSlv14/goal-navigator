@@ -1,16 +1,21 @@
-import { Decimal } from '@prisma/client/runtime';
-
-export const decimalToNumber = (value: Decimal | number | null | undefined): number => {
+export const decimalToNumber = (value: any): number => {
   if (value === null || value === undefined) return 0;
   if (typeof value === 'number') return value;
-  return Number(value.toString());
+  // Prisma Decimal.js instances
+  if (typeof value === 'object' && typeof value.toNumber === 'function') {
+    return value.toNumber();
+  }
+  if (typeof value === 'object' && typeof value.toString === 'function') {
+    return Number(value.toString());
+  }
+  return Number(value) || 0;
 };
 
 export const calculateGoalProgress = (params: {
-  targetAmount: number | Decimal;
-  initialCash: number | Decimal;
-  initialPix: number | Decimal;
-  transactions: { amount: number | Decimal; type: 'cash' | 'pix'; category: 'entrada' | 'saida' }[];
+  targetAmount: number | any;
+  initialCash: number | any;
+  initialPix: number | any;
+  transactions: { amount: number | any; type: 'cash' | 'pix'; category: 'entrada' | 'saida' }[];
 }) => {
   const targetAmount = decimalToNumber(params.targetAmount);
   const initialCash = decimalToNumber(params.initialCash);

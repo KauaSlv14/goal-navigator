@@ -68,7 +68,15 @@ export const goalsRoutes = async (app: FastifyInstance) => {
     }
 
     try {
-      const goal = await createGoal({ ...parsed.data, userEmail: user.email, userName: user.name });
+      const goal = await createGoal({ 
+        ...parsed.data, 
+        userEmail: user.email, 
+        userName: user.name,
+        name: parsed.data.name || '',
+        targetAmount: parsed.data.targetAmount || 0,
+        initialCash: parsed.data.initialCash || 0,
+        initialPix: parsed.data.initialPix || 0,
+      });
       return goal;
     } catch (err: any) {
       if (err?.message === 'USER_NOT_FOUND') {
@@ -115,7 +123,12 @@ export const goalsRoutes = async (app: FastifyInstance) => {
     }
 
     try {
-      const tx = await addTransactionToGoal(params.id, user.email, parsed.data, user.name);
+      const tx = await addTransactionToGoal(params.id, user.email, {
+        amount: parsed.data.amount || 0,
+        type: parsed.data.type || 'cash',
+        category: parsed.data.category || 'entrada',
+        description: parsed.data.description,
+      }, user.name);
       if (!tx) return reply.code(404).send({ error: 'Meta não encontrada' });
       return tx;
     } catch (err: any) {
@@ -149,7 +162,18 @@ export const goalsRoutes = async (app: FastifyInstance) => {
     }
 
     try {
-      const rec = await addRecurringPaymentToGoal(params.id, { ...parsed.data, userEmail: user.email, userName: user.name });
+      const rec = await addRecurringPaymentToGoal(params.id, {
+        userEmail: user.email,
+        userName: user.name,
+        name: parsed.data.name || '',
+        amount: parsed.data.amount || 0,
+        type: parsed.data.type || 'cash',
+        category: parsed.data.category || 'entrada',
+        frequency: parsed.data.frequency || 'mensal',
+        dayOfMonth: parsed.data.dayOfMonth,
+        dayOfWeek: parsed.data.dayOfWeek,
+        startsAt: parsed.data.startsAt,
+      });
       if (!rec) return reply.code(404).send({ error: 'Meta não encontrada' });
       return rec;
     } catch (err: any) {
