@@ -1,16 +1,27 @@
+import https from 'https';
 import fs from 'fs';
 import path from 'path';
 
-const icon192 = Buffer.from(
-    'iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAQAAABoP+JjAAAAc0lEQVR42u3BAQ0AAADCoPdPbQ8HFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAuA72RAAB2nL2WwAAAABJRU5ErkJggg==',
-    'base64'
-);
-const icon512 = Buffer.from(
-    'iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAYAAAD0eNT6AAABAklEQVR42u3BAQ0AAADCoPdPbQ8HFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADwZpB9AAEW6iIEAAAAAElFTkSuQmCC',
-    'base64'
-);
+function downloadImage(url, dest) {
+    return new Promise((resolve, reject) => {
+        const file = fs.createWriteStream(dest);
+        https.get(url, (response) => {
+            response.pipe(file);
+            file.on('finish', () => {
+                file.close(resolve);
+            });
+        }).on('error', (err) => {
+            fs.unlink(dest, () => reject(err));
+        });
+    });
+}
 
-fs.writeFileSync(path.join(process.cwd(), 'public', 'pwa-192x192.png'), icon192);
-fs.writeFileSync(path.join(process.cwd(), 'public', 'pwa-512x512.png'), icon512);
+async function run() {
+    console.log('Downloading 192x192 icon...');
+    await downloadImage('https://placehold.co/192x192/000000/FFFFFF/png?text=GN', path.join(process.cwd(), 'public', 'pwa-192x192.png'));
+    console.log('Downloading 512x512 icon...');
+    await downloadImage('https://placehold.co/512x512/000000/FFFFFF/png?text=GN', path.join(process.cwd(), 'public', 'pwa-512x512.png'));
+    console.log('Done.');
+}
 
-console.log('Icons created successfully');
+run();
