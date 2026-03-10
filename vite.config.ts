@@ -18,8 +18,8 @@ export default defineConfig(({ mode }) => ({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'robots.txt', 'pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
-        name: 'Goal Navigator',
-        short_name: 'GoalNav',
+        name: 'Metas',
+        short_name: 'Metas',
         description: 'Seu navegador de metas',
         theme_color: '#ffffff',
         background_color: '#ffffff',
