@@ -11,6 +11,7 @@ import { getAvatarUrl } from '@/lib/utils';
 import { UserSession, GoalWithProgress, GoalFormData, formatCurrency, TransactionFormData } from '@/lib/types';
 import { Target, Plus, Wallet, Banknote, Smartphone, LogOut, User, Users } from 'lucide-react';
 import { toast } from 'sonner';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export const Dashboard = () => {
   const navigate = useNavigate();
@@ -159,8 +160,9 @@ export const Dashboard = () => {
               <Button variant="ghost" size="icon" onClick={() => navigate('/friends')}>
                 <Users className="w-5 h-5" />
               </Button>
+              <ThemeToggle />
               <Button variant="ghost" size="icon" onClick={handleLogout}>
-                <LogOut className="w-5 h-5" />
+                <LogOut className="w-5 h-5 text-destructive" />
               </Button>
             </div>
           </div>

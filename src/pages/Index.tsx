@@ -4,6 +4,7 @@ import { StaircaseUp } from '@/components/icons/StaircaseUp';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { UserSession } from '@/lib/types';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -50,6 +51,10 @@ const Index = () => {
       {/* Background decoration */}
       <div className="absolute inset-0 -z-10 bg-grid-pattern opacity-[0.03] pointer-events-none" />
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-3xl -translate-y-1/2 animate-pulse-glow" />
+
+      <div className="absolute top-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
 
       <div className="container max-w-5xl mx-auto px-4 pt-20 pb-20 relative">
         {/* Hero Section */}

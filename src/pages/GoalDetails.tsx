@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createRecurringPayment, createTransaction, deleteGoal as deleteGoalApi, getGoalDetails, deleteRecurringPayment } from '@/lib/api';
 import { AddRecurringModal } from '@/components/AddRecurringModal';
@@ -172,6 +173,7 @@ export const GoalDetails = () => {
               <span className="font-medium">Voltar</span>
             </button>
             <div className="flex items-center gap-2">
+              <ThemeToggle />
               <Button
                 variant="ghost"
                 size="icon"

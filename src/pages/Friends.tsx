@@ -33,6 +33,7 @@ import {
 import { toast } from 'sonner';
 import { ArrowLeft, UserPlus, Users, X, Check, Clock, MoreVertical } from 'lucide-react';
 import { getAvatarUrl } from '@/lib/utils';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export const Friends = () => {
     const navigate = useNavigate();
@@ -141,13 +142,14 @@ export const Friends = () => {
         <div className="min-h-[100dvh] bg-background">
             {/* Header */}
             <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border pt-[env(safe-area-inset-top)]">
-                <div className="container max-w-2xl mx-auto px-4 py-4">
+                <div className="container max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
                             <ArrowLeft className="w-5 h-5" />
                         </Button>
                         <h1 className="font-bold text-foreground text-lg">Amigos</h1>
                     </div>
+                    <ThemeToggle />
                 </div>
             </header>
 
