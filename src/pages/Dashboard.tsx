@@ -20,7 +20,12 @@ export const Dashboard = () => {
   const [celebrationGoal, setCelebrationGoal] = useState<GoalWithProgress | null>(null);
   const queryClient = useQueryClient();
   const storedUser = localStorage.getItem('user');
-  const user: UserSession | null = storedUser ? JSON.parse(storedUser) : null;
+  let user: UserSession | null = null;
+  try {
+    user = storedUser ? JSON.parse(storedUser) : null;
+  } catch (e) {
+    localStorage.removeItem('user');
+  }
 
   useEffect(() => {
     if (!user?.email || !user?.token) {

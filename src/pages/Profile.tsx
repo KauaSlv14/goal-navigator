@@ -14,7 +14,12 @@ export default function Profile() {
     const navigate = useNavigate();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const storedUser = localStorage.getItem('user');
-    const user: UserSession | null = storedUser ? JSON.parse(storedUser) : null;
+    let user: UserSession | null = null;
+    try {
+        user = storedUser ? JSON.parse(storedUser) : null;
+    } catch (e) {
+        localStorage.removeItem('user');
+    }
 
     const [name, setName] = useState(user?.name || '');
     const [avatarFile, setAvatarFile] = useState<File | null>(null);

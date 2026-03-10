@@ -16,10 +16,16 @@ export const Auth = () => {
   const [mode, setMode] = useState<AuthMode>('login');
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    const user: UserSession | null = storedUser ? JSON.parse(storedUser) : null;
-    if (user?.token) {
-      navigate('/dashboard', { replace: true });
+    try {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        const user: UserSession = JSON.parse(storedUser);
+        if (user?.token) {
+          navigate('/dashboard', { replace: true });
+        }
+      }
+    } catch (e) {
+      localStorage.removeItem('user');
     }
   }, [navigate]);
   const [loading, setLoading] = useState(false);
