@@ -2,9 +2,19 @@ import { Button } from '@/components/ui/button';
 import { Target, ArrowRight, Wallet, TrendingUp, Bell, Shield, CheckCircle2 } from 'lucide-react';
 import { StaircaseUp } from '@/components/icons/StaircaseUp';
 import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { UserSession } from '@/lib/types';
 
 const Index = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    const user: UserSession | null = storedUser ? JSON.parse(storedUser) : null;
+    if (user?.token) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [navigate]);
 
   const features = [
     {

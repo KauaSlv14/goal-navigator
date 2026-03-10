@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -7,12 +7,21 @@ import { StaircaseUp } from '@/components/icons/StaircaseUp';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { login, register } from '@/lib/api';
+import { UserSession } from '@/lib/types';
 
 type AuthMode = 'login' | 'register' | 'forgot';
 
 export const Auth = () => {
   const navigate = useNavigate();
   const [mode, setMode] = useState<AuthMode>('login');
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    const user: UserSession | null = storedUser ? JSON.parse(storedUser) : null;
+    if (user?.token) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [navigate]);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
