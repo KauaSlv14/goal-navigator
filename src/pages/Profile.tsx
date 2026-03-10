@@ -57,9 +57,9 @@ export default function Profile() {
     };
 
     return (
-        <div className="min-h-screen bg-background">
+        <div className="min-h-[100dvh] bg-background">
             {/* Header */}
-            <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border">
+            <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border pt-[env(safe-area-inset-top)]">
                 <div className="container max-w-2xl mx-auto px-4 py-4">
                     <div className="flex items-center gap-3">
                         <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
@@ -70,7 +70,7 @@ export default function Profile() {
                 </div>
             </header>
 
-            <main className="container max-w-2xl mx-auto px-4 py-8">
+            <main className="container max-w-2xl mx-auto px-4 py-8 pb-[calc(2rem+env(safe-area-inset-bottom))]">
                 <div className="card-elevated p-6 animate-fade-in-up">
                     <form onSubmit={handleSubmit} className="space-y-6">
 

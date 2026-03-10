@@ -127,7 +127,7 @@ export const GoalDetails = () => {
 
   if (goalQuery.isLoading || !goal) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-[100dvh] bg-background flex items-center justify-center">
         <div className="animate-pulse flex items-center gap-2">
           <Target className="w-6 h-6 text-primary" />
           <span className="text-muted-foreground">Carregando...</span>
@@ -159,9 +159,9 @@ export const GoalDetails = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-[100dvh] bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border">
+      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border pt-[env(safe-area-inset-top)]">
         <div className="container max-w-2xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <button
@@ -192,7 +192,7 @@ export const GoalDetails = () => {
         </div>
       </header>
 
-      <main className="container max-w-2xl mx-auto px-4 py-8 space-y-8 relative">
+      <main className="container max-w-2xl mx-auto px-4 py-8 pb-[calc(2rem+env(safe-area-inset-bottom))] space-y-8 relative">
         <div className="absolute inset-0 -z-10 bg-grid-pattern opacity-[0.03] pointer-events-none" />
 
         {/* Goal Header */}

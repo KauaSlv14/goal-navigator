@@ -73,7 +73,7 @@ export const ForecastCard = ({ forecast, remaining }: ForecastCardProps) => {
             </div>
             <div>
               <p className="text-sm font-semibold text-foreground">Sem imprevistos</p>
-              <p className="text-xs text-muted-foreground w-36 sm:w-auto">
+              <p className="text-xs text-muted-foreground flex-1 min-w-0">
                 Se tudo der certo, você chega lá em:
               </p>
             </div>
@@ -91,7 +91,7 @@ export const ForecastCard = ({ forecast, remaining }: ForecastCardProps) => {
             </div>
             <div>
               <p className="text-sm font-semibold text-foreground">Cenário Provável</p>
-              <p className="text-xs text-muted-foreground w-36 sm:w-auto">
+              <p className="text-xs text-muted-foreground flex-1 min-w-0">
                 Considerando pequenos gastos extras:
               </p>
             </div>
@@ -109,7 +109,7 @@ export const ForecastCard = ({ forecast, remaining }: ForecastCardProps) => {
             </div>
             <div>
               <p className="text-sm font-semibold text-foreground">Cenário Conservador</p>
-              <p className="text-xs text-muted-foreground w-36 sm:w-auto">
+              <p className="text-xs text-muted-foreground flex-1 min-w-0">
                 Se houver muitos imprevistos (25%):
               </p>
             </div>

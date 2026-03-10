@@ -30,7 +30,7 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background overflow-hidden relative selection:bg-primary/30">
+    <div className="min-h-[100dvh] bg-background overflow-hidden relative selection:bg-primary/30 pb-[env(safe-area-inset-bottom)]">
       {/* Background decoration */}
       <div className="absolute inset-0 -z-10 bg-grid-pattern opacity-[0.03] pointer-events-none" />
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-3xl -translate-y-1/2 animate-pulse-glow" />

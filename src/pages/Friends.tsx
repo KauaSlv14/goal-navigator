@@ -138,9 +138,9 @@ export const Friends = () => {
     const isLoading = isLoadingFriends || isLoadingRequests || isLoadingSent;
 
     return (
-        <div className="min-h-screen bg-background">
+        <div className="min-h-[100dvh] bg-background">
             {/* Header */}
-            <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border">
+            <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border pt-[env(safe-area-inset-top)]">
                 <div className="container max-w-2xl mx-auto px-4 py-4">
                     <div className="flex items-center gap-3">
                         <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
@@ -151,7 +151,7 @@ export const Friends = () => {
                 </div>
             </header>
 
-            <main className="container max-w-2xl mx-auto px-4 py-6 space-y-8">
+            <main className="container max-w-2xl mx-auto px-4 py-6 pb-[calc(2rem+env(safe-area-inset-bottom))] space-y-8">
                 {/* Actions */}
                 <div className="flex justify-end">
                     <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
