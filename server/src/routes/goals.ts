@@ -1,12 +1,10 @@
+```typescript
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import {
-  addRecurringPaymentToGoal,
-  addTransactionToGoal,
   createGoal,
   getGoalById,
   getGoalsWithProgress,
-  createRecurringPayment,
   createRecurringPayment,
   deleteGoal,
   deleteRecurringPayment,
