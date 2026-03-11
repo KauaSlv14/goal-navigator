@@ -80,7 +80,7 @@ export const CreateGoalModal = ({
       toast.error('Digite o nome do item ou cole o link do produto');
       return;
     }
-    
+
     setLoading(true);
     setUploadedImageName('');
     // Mock image search - in production, this would call an API
@@ -96,12 +96,12 @@ export const CreateGoalModal = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.name.trim()) {
       toast.error('Digite o nome da meta');
       return;
     }
-    
+
     if (formData.targetAmount <= 0) {
       toast.error('O valor alvo deve ser maior que zero');
       return;
@@ -184,8 +184,8 @@ export const CreateGoalModal = ({
           {/* Initial Balances */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="initialCash" className="text-sm font-medium flex items-center gap-1.5">
-                <Banknote className="w-4 h-4" />
+              <Label htmlFor="initialCash" className="text-sm font-medium flex items-center gap-1.5 min-h-[40px]">
+                <Banknote className="w-4 h-4 shrink-0" />
                 Saldo inicial (Dinheiro)
               </Label>
               <Input
@@ -201,8 +201,8 @@ export const CreateGoalModal = ({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="initialPix" className="text-sm font-medium flex items-center gap-1.5">
-                <Smartphone className="w-4 h-4" />
+              <Label htmlFor="initialPix" className="text-sm font-medium flex items-center gap-1.5 min-h-[40px]">
+                <Smartphone className="w-4 h-4 shrink-0" />
                 Saldo inicial (Pix)
               </Label>
               <Input

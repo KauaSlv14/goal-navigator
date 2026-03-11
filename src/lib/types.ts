@@ -131,19 +131,27 @@ export const formatCurrency = (value: number): string => {
   }).format(value);
 };
 
-export const formatDate = (date: Date): string => {
+export const formatDate = (date: Date | string): string => {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  // If midnight UTC, it was likely meant as a pure date. 
+  // We add the offset to make it "local" so it doesn't jump back a day in BRT.
+  const localDate = new Date(d.getTime() + d.getTimezoneOffset() * 60000);
+
   return new Intl.DateTimeFormat('pt-BR', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
-  }).format(date);
+  }).format(localDate);
 };
 
-export const formatDateShort = (date: Date): string => {
+export const formatDateShort = (date: Date | string): string => {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  const localDate = new Date(d.getTime() + d.getTimezoneOffset() * 60000);
+
   return new Intl.DateTimeFormat('pt-BR', {
     day: '2-digit',
     month: 'short',
-  }).format(date);
+  }).format(localDate);
 };
 
 export const convertToMonthlyRate = (amount: number, frequency: RecurrenceFrequency): number => {

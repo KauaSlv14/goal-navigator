@@ -182,19 +182,19 @@ export const Dashboard = () => {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-secondary/50 rounded-lg p-3">
+            <div className="bg-secondary/50 rounded-lg p-3 flex flex-col justify-between">
               <div className="flex items-center gap-2 text-muted-foreground mb-1">
                 <Banknote className="w-4 h-4" />
                 <span className="text-xs font-medium">Dinheiro</span>
               </div>
-              <p className="font-bold text-foreground">{formatCurrency(totalCash)}</p>
+              <p className="font-bold text-foreground text-sm sm:text-base truncate">{formatCurrency(totalCash)}</p>
             </div>
-            <div className="bg-secondary/50 rounded-lg p-3">
+            <div className="bg-secondary/50 rounded-lg p-3 flex flex-col justify-between">
               <div className="flex items-center gap-2 text-muted-foreground mb-1">
                 <Smartphone className="w-4 h-4" />
                 <span className="text-xs font-medium">Pix</span>
               </div>
-              <p className="font-bold text-foreground">{formatCurrency(totalPix)}</p>
+              <p className="font-bold text-foreground text-sm sm:text-base truncate">{formatCurrency(totalPix)}</p>
             </div>
           </div>
         </div>
