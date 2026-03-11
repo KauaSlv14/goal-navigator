@@ -1,10 +1,9 @@
-import { FastifyInstance } from 'fastify';
-import { z } from 'zod';
 import {
   createGoal,
   getGoalById,
   getGoalsWithProgress,
-  createRecurringPayment,
+  addRecurringPaymentToGoal,
+  addTransactionToGoal,
   deleteGoal,
   deleteRecurringPayment,
   updateTransaction,
