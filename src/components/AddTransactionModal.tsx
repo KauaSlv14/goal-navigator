@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -18,6 +18,7 @@ interface AddTransactionModalProps {
   onClose: () => void;
   onSubmit: (data: TransactionFormData) => Promise<void> | void;
   goalName: string;
+  initialData?: TransactionFormData;
 }
 
 export const AddTransactionModal = ({
@@ -25,14 +26,28 @@ export const AddTransactionModal = ({
   onClose,
   onSubmit,
   goalName,
+  initialData,
 }: AddTransactionModalProps) => {
   const [submitting, setSubmitting] = useState(false);
-  const [formData, setFormData] = useState<TransactionFormData>({
+  const [formData, setFormData] = useState<TransactionFormData>(initialData || {
     amount: 0,
     type: 'pix',
     category: 'entrada',
     description: '',
   });
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData(initialData);
+    } else {
+      setFormData({
+        amount: 0,
+        type: 'pix',
+        category: 'entrada',
+        description: '',
+      });
+    }
+  }, [initialData, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,7 +83,9 @@ export const AddTransactionModal = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-xl">Nova Transação</DialogTitle>
+          <DialogTitle className="text-xl">
+            {initialData ? 'Editar Transação' : 'Nova Transação'}
+          </DialogTitle>
           <p className="text-sm text-muted-foreground">{goalName}</p>
         </DialogHeader>
 
@@ -206,7 +223,7 @@ export const AddTransactionModal = ({
               className="flex-1"
               disabled={submitting}
             >
-              Registrar
+              {initialData ? 'Salvar Alterações' : 'Registrar'}
             </Button>
           </div>
         </form>

@@ -6,9 +6,14 @@ import {
   createGoal,
   getGoalById,
   getGoalsWithProgress,
-  getNextRunDate,
+  createRecurringPayment,
+  createRecurringPayment,
   deleteGoal,
   deleteRecurringPayment,
+  updateTransaction,
+  deleteTransaction,
+  updateRecurringPayment,
+  getNextRunDate,
 } from '../services/goalService.js';
 import { processDueRecurrences } from '../services/recurringService.js';
 import jwt from 'jsonwebtoken';
@@ -68,9 +73,9 @@ export const goalsRoutes = async (app: FastifyInstance) => {
     }
 
     try {
-      const goal = await createGoal({ 
-        ...parsed.data, 
-        userEmail: user.email, 
+      const goal = await createGoal({
+        ...parsed.data,
+        userEmail: user.email,
         userName: user.name,
         name: parsed.data.name || '',
         targetAmount: parsed.data.targetAmount || 0,
@@ -139,6 +144,35 @@ export const goalsRoutes = async (app: FastifyInstance) => {
     }
   });
 
+  app.patch('/:id/transactions/:transactionId', async (request, reply) => {
+    const user = getUserFromAuth(request.headers.authorization);
+    if (!user?.email) {
+      return reply.code(401).send({ error: 'Não autorizado' });
+    }
+    const params = z.object({ id: z.string().min(1), transactionId: z.string().min(1) }).parse(request.params);
+    const schema = z.object({
+      amount: z.number().positive().optional(),
+      type: z.enum(['cash', 'pix']).optional(),
+      category: z.enum(['entrada', 'saida']).optional(),
+      description: z.string().optional(),
+    });
+    const parsed = schema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.code(400).send({ error: 'Dados inválidos', details: parsed.error.flatten() });
+    }
+
+    try {
+      const tx = await updateTransaction(params.id, params.transactionId, user.email, parsed.data, user.name);
+      if (!tx) return reply.code(404).send({ error: 'Transação não encontrada' });
+      return tx;
+    } catch (err: any) {
+      if (err?.message === 'USER_NOT_FOUND') {
+        return reply.code(401).send({ error: 'Usuário não encontrado' });
+      }
+      throw err;
+    }
+  });
+
   app.post('/:id/recurring', async (request, reply) => {
     const user = getUserFromAuth(request.headers.authorization);
     if (!user?.email) {
@@ -175,6 +209,41 @@ export const goalsRoutes = async (app: FastifyInstance) => {
         startsAt: parsed.data.startsAt,
       });
       if (!rec) return reply.code(404).send({ error: 'Meta não encontrada' });
+      return rec;
+    } catch (err: any) {
+      if (err?.message === 'USER_NOT_FOUND') {
+        return reply.code(401).send({ error: 'Usuário não encontrado' });
+      }
+      throw err;
+    }
+  });
+
+  app.patch('/:id/recurring/:recurringId', async (request, reply) => {
+    const user = getUserFromAuth(request.headers.authorization);
+    if (!user?.email) {
+      return reply.code(401).send({ error: 'Não autorizado' });
+    }
+    const params = z.object({ id: z.string().min(1), recurringId: z.string().min(1) }).parse(request.params);
+    const schema = z.object({
+      name: z.string().min(1).optional(),
+      amount: z.number().positive().optional(),
+      type: z.enum(['cash', 'pix']).optional(),
+      category: z.enum(['entrada', 'saida']).optional(),
+      frequency: z.enum(['diario', 'semanal', 'mensal', 'anual']).optional(),
+      dayOfMonth: z.number().min(1).max(31).optional(),
+      dayOfWeek: z.number().min(0).max(6).optional(),
+      startDate: z.string().optional(),
+      endDate: z.string().optional(),
+    });
+
+    const parsed = schema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.code(400).send({ error: 'Dados inválidos', details: parsed.error.flatten() });
+    }
+
+    try {
+      const rec = await updateRecurringPayment(params.id, params.recurringId, user.email, parsed.data, user.name);
+      if (!rec) return reply.code(404).send({ error: 'Recorrência não encontrada' });
       return rec;
     } catch (err: any) {
       if (err?.message === 'USER_NOT_FOUND') {

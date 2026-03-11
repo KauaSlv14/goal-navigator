@@ -33,7 +33,16 @@ import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createRecurringPayment, createTransaction, deleteGoal as deleteGoalApi, getGoalDetails, deleteRecurringPayment } from '@/lib/api';
+import {
+  createRecurringPayment,
+  createTransaction,
+  deleteGoal as deleteGoalApi,
+  getGoalDetails,
+  deleteRecurringPayment,
+  updateTransaction,
+  deleteTransaction,
+  updateRecurringPayment
+} from '@/lib/api';
 import { AddRecurringModal } from '@/components/AddRecurringModal';
 
 export const GoalDetails = () => {
@@ -46,6 +55,8 @@ export const GoalDetails = () => {
   const [goal, setGoal] = useState<GoalWithProgress | null>(null);
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
   const [isRecurringModalOpen, setIsRecurringModalOpen] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState<any | null>(null);
+  const [editingRecurring, setEditingRecurring] = useState<any | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
 
   useEffect(() => {
@@ -59,15 +70,28 @@ export const GoalDetails = () => {
     queryFn: () => getGoalDetails(id!, user as UserSession),
     enabled: !!id && !!user?.email && !!user?.token,
     retry: false,
-    onSuccess: (data) => setGoal(data),
-    onError: () => {
-      toast.error('Meta não encontrada');
-      navigate('/dashboard');
-    },
   });
 
+  useEffect(() => {
+    if (goalQuery.data) {
+      setGoal(goalQuery.data as GoalWithProgress);
+    }
+  }, [goalQuery.data]);
+
+  useEffect(() => {
+    if (goalQuery.isError) {
+      toast.error('Meta não encontrada');
+      navigate('/dashboard');
+    }
+  }, [goalQuery.isError, navigate]);
+
   const transactionMutation = useMutation({
-    mutationFn: (payload: TransactionFormData) => createTransaction(id!, payload, user as UserSession),
+    mutationFn: (payload: TransactionFormData) => {
+      if (editingTransaction) {
+        return updateTransaction(id!, editingTransaction.id, payload, user as UserSession);
+      }
+      return createTransaction(id!, payload, user as UserSession);
+    },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['goal', id, user?.email] });
       const updated = await queryClient.fetchQuery({
@@ -75,6 +99,8 @@ export const GoalDetails = () => {
         queryFn: () => getGoalDetails(id!, user as UserSession),
       });
       setGoal(updated);
+      setIsTransactionModalOpen(false);
+      setEditingTransaction(null);
       if (!goal?.isCompleted && updated.isCompleted) {
         setTimeout(() => setShowCelebration(true), 500);
       }
@@ -83,7 +109,12 @@ export const GoalDetails = () => {
   });
 
   const recurringMutation = useMutation({
-    mutationFn: (payload: RecurringFormData) => createRecurringPayment(id!, payload, user as UserSession),
+    mutationFn: (payload: RecurringFormData) => {
+      if (editingRecurring) {
+        return updateRecurringPayment(id!, editingRecurring.id, payload, user as UserSession);
+      }
+      return createRecurringPayment(id!, payload, user as UserSession);
+    },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['goal', id, user?.email] });
       const updated = await queryClient.fetchQuery({
@@ -91,9 +122,25 @@ export const GoalDetails = () => {
         queryFn: () => getGoalDetails(id!, user as UserSession),
       });
       setGoal(updated);
-      toast.success('Recorrência criada!');
+      setIsRecurringModalOpen(false);
+      setEditingRecurring(null);
+      toast.success(editingRecurring ? 'Recorrência atualizada!' : 'Recorrência criada!');
     },
-    onError: (err: any) => toast.error(err?.message ?? 'Não foi possível criar a recorrência'),
+    onError: (err: any) => toast.error(err?.message ?? 'Não foi possível salvar a recorrência'),
+  });
+
+  const deleteTransactionMutation = useMutation({
+    mutationFn: (transactionId: string) => deleteTransaction(id!, transactionId, user as UserSession),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['goal', id, user?.email] });
+      const updated = await queryClient.fetchQuery({
+        queryKey: ['goal', id, user?.email],
+        queryFn: () => getGoalDetails(id!, user as UserSession),
+      });
+      setGoal(updated);
+      toast.success('Transação removida!');
+    },
+    onError: (err: any) => toast.error(err?.message ?? 'Não foi possível remover a transação'),
   });
 
   const deleteRecurringMutation = useMutation({
@@ -311,7 +358,19 @@ export const GoalDetails = () => {
                 {goal.transactions.length > 0 ? (
                   <div className="divide-y divide-border/50">
                     {goal.transactions.map((transaction) => (
-                      <TransactionItem key={transaction.id} transaction={transaction} />
+                      <TransactionItem
+                        key={transaction.id}
+                        transaction={transaction}
+                        onEdit={(t) => {
+                          setEditingTransaction(t);
+                          setIsTransactionModalOpen(true);
+                        }}
+                        onDelete={(transactionId) => {
+                          if (confirm('Tem certeza que deseja apagar esta transação?')) {
+                            deleteTransactionMutation.mutate(transactionId);
+                          }
+                        }}
+                      />
                     ))}
                   </div>
                 ) : (
@@ -335,6 +394,10 @@ export const GoalDetails = () => {
                       <RecurringPaymentItem
                         key={payment.id}
                         payment={payment}
+                        onEdit={(p) => {
+                          setEditingRecurring(p);
+                          setIsRecurringModalOpen(true);
+                        }}
                         onDelete={(recurringId) => {
                           if (confirm('Tem certeza que deseja remover esta recorrência?')) {
                             deleteRecurringMutation.mutate(recurringId);
@@ -370,16 +433,39 @@ export const GoalDetails = () => {
       {/* Add Transaction Modal */}
       <AddTransactionModal
         isOpen={isTransactionModalOpen}
-        onClose={() => setIsTransactionModalOpen(false)}
+        onClose={() => {
+          setIsTransactionModalOpen(false);
+          setEditingTransaction(null);
+        }}
         onSubmit={handleAddTransaction}
         goalName={goal.name}
+        initialData={editingTransaction ? {
+          amount: editingTransaction.amount,
+          type: editingTransaction.type,
+          category: editingTransaction.category,
+          description: editingTransaction.description || '',
+        } : undefined}
       />
 
       {/* Add Recurring Modal */}
       <AddRecurringModal
         isOpen={isRecurringModalOpen}
-        onClose={() => setIsRecurringModalOpen(false)}
+        onClose={() => {
+          setIsRecurringModalOpen(false);
+          setEditingRecurring(null);
+        }}
         onSubmit={handleAddRecurring}
+        initialData={editingRecurring ? {
+          name: editingRecurring.name,
+          amount: editingRecurring.amount,
+          type: editingRecurring.type,
+          category: editingRecurring.category,
+          frequency: editingRecurring.frequency,
+          dayOfMonth: editingRecurring.dayOfMonth,
+          dayOfWeek: editingRecurring.dayOfWeek,
+          startDate: editingRecurring.startDate,
+          endDate: editingRecurring.endDate,
+        } : undefined}
       />
 
       {/* Celebration Modal */}

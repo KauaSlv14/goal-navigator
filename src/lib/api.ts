@@ -12,7 +12,7 @@ import {
 // In development, use VITE_API_URL (e.g., http://localhost:3333)
 // In production (Vercel), use relative paths (empty string, so /api/... works)
 const isDev = import.meta.env.DEV;
-export const API_URL = isDev 
+export const API_URL = isDev
   ? (import.meta.env.VITE_API_URL || 'http://localhost:3333')
   : '';
 
@@ -228,18 +228,82 @@ export const createTransaction = async (goalId: string, payload: TransactionForm
   const res = await fetch(`${API_URL}/api/goals/${goalId}/transactions`, {
     method: 'POST',
     headers: authHeaders(user.token),
-    body: JSON.stringify(payload),
   });
   await handleResponse(res);
 };
 
-export const createRecurringPayment = async (goalId: string, payload: RecurringFormData, user: UserSession) => {
-  const res = await fetch(`${API_URL}/api/goals/${goalId}/recurring`, {
+export const createRecurringPayment = async (goalId: string, data: RecurringFormData, user: UserSession): Promise<any> => {
+  const response = await fetch(`${API_URL}/api/goals/${goalId}/recurring`, {
     method: 'POST',
-    headers: authHeaders(user.token),
-    body: JSON.stringify(payload),
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${user.token}`,
+    },
+    body: JSON.stringify(data),
   });
-  await handleResponse(res);
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error || 'Não foi possível criar a recorrência');
+  }
+  return response.json();
+};
+
+export const updateTransaction = async (
+  goalId: string,
+  transactionId: string,
+  data: Partial<TransactionFormData>,
+  user: UserSession
+): Promise<any> => {
+  const response = await fetch(`${API_URL}/api/goals/${goalId}/transactions/${transactionId}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${user.token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error || 'Não foi possível atualizar a transação');
+  }
+  return response.json();
+};
+
+export const deleteTransaction = async (goalId: string, transactionId: string, user: UserSession): Promise<any> => {
+  const response = await fetch(`${API_URL}/api/goals/${goalId}/transactions/${transactionId}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${user.token}`,
+    },
+    body: JSON.stringify({}),
+  });
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error || 'Não foi possível deletar a transação');
+  }
+  return response.json();
+};
+
+export const updateRecurringPayment = async (
+  goalId: string,
+  recurringId: string,
+  data: Partial<RecurringFormData>,
+  user: UserSession
+): Promise<any> => {
+  const response = await fetch(`${API_URL}/api/goals/${goalId}/recurring/${recurringId}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${user.token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error || 'Não foi possível atualizar a recorrência');
+  }
+  return response.json();
 };
 
 export const runRecurringNow = async () => {

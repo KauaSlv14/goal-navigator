@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -17,6 +17,7 @@ interface AddRecurringModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: RecurringFormData) => Promise<void> | void;
+  initialData?: RecurringFormData;
 }
 
 const frequencyOptions: { value: RecurrenceFrequency; label: string }[] = [
@@ -26,9 +27,9 @@ const frequencyOptions: { value: RecurrenceFrequency; label: string }[] = [
   { value: 'anual', label: 'Anual' },
 ];
 
-export const AddRecurringModal = ({ isOpen, onClose, onSubmit }: AddRecurringModalProps) => {
+export const AddRecurringModal = ({ isOpen, onClose, onSubmit, initialData }: AddRecurringModalProps) => {
   const [submitting, setSubmitting] = useState(false);
-  const [formData, setFormData] = useState<RecurringFormData>({
+  const [formData, setFormData] = useState<RecurringFormData>(initialData || {
     name: '',
     amount: 0,
     type: 'pix',
@@ -36,6 +37,21 @@ export const AddRecurringModal = ({ isOpen, onClose, onSubmit }: AddRecurringMod
     frequency: 'mensal',
     dayOfMonth: 5,
   });
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData(initialData);
+    } else {
+      setFormData({
+        name: '',
+        amount: 0,
+        type: 'pix',
+        category: 'entrada',
+        frequency: 'mensal',
+        dayOfMonth: 5,
+      });
+    }
+  }, [initialData, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -126,7 +142,9 @@ export const AddRecurringModal = ({ isOpen, onClose, onSubmit }: AddRecurringMod
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-xl">Nova recorrência</DialogTitle>
+          <DialogTitle className="text-xl">
+            {initialData ? 'Editar recorrência' : 'Nova recorrência'}
+          </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-5 mt-2">
@@ -273,7 +291,7 @@ export const AddRecurringModal = ({ isOpen, onClose, onSubmit }: AddRecurringMod
 
           <div className="flex gap-3">
             <div className="space-y-2 flex-1">
-              <Label htmlFor="startDate" className="text-sm font-medium">
+              <Label htmlFor="startDate" className="text-sm font-medium min-h-[40px] flex items-end">
                 Data de Início (opcional)
               </Label>
               <Input
@@ -290,7 +308,7 @@ export const AddRecurringModal = ({ isOpen, onClose, onSubmit }: AddRecurringMod
               />
             </div>
             <div className="space-y-2 flex-1">
-              <Label htmlFor="endDate" className="text-sm font-medium">
+              <Label htmlFor="endDate" className="text-sm font-medium min-h-[40px] flex items-end">
                 Data Final (opcional)
               </Label>
               <Input
@@ -319,7 +337,7 @@ export const AddRecurringModal = ({ isOpen, onClose, onSubmit }: AddRecurringMod
               Cancelar
             </Button>
             <Button type="submit" variant="gradient" className="flex-1 h-12" disabled={submitting}>
-              Salvar
+              {initialData ? 'Salvar Alterações' : 'Salvar'}
             </Button>
           </div>
         </form>

@@ -163,6 +163,92 @@ export const addRecurringPaymentToGoal = async (
   });
 };
 
+export const updateTransaction = async (
+  goalId: string,
+  transactionId: string,
+  userEmail: string,
+  data: Partial<TransactionInput>,
+  userName?: string
+) => {
+  const user = await ensureUser(userEmail, userName);
+  if (!user) throw new Error('USER_NOT_FOUND');
+
+  const goalExists = await prisma.goal.findFirst({ where: { id: goalId, userId: user.id } });
+  if (!goalExists) return null;
+
+  const transaction = await prisma.transaction.findFirst({ where: { id: transactionId, goalId } });
+  if (!transaction) return null;
+
+  return prisma.transaction.update({
+    where: { id: transactionId },
+    data: {
+      amount: data.amount,
+      type: data.type,
+      category: data.category,
+      description: data.description,
+    },
+  });
+};
+
+export const deleteTransaction = async (goalId: string, transactionId: string, userEmail: string, userName?: string) => {
+  const user = await ensureUser(userEmail, userName);
+  if (!user) throw new Error('USER_NOT_FOUND');
+
+  const goalExists = await prisma.goal.findFirst({ where: { id: goalId, userId: user.id } });
+  if (!goalExists) return null;
+
+  return prisma.transaction.delete({
+    where: { id: transactionId, goalId },
+  });
+};
+
+export const updateRecurringPayment = async (
+  goalId: string,
+  recurringId: string,
+  userEmail: string,
+  data: {
+    name?: string;
+    amount?: number;
+    type?: TransactionType;
+    category?: TransactionCategory;
+    frequency?: RecurrenceFrequency;
+    dayOfMonth?: number;
+    dayOfWeek?: number;
+    startDate?: string;
+    endDate?: string;
+  },
+  userName?: string
+) => {
+  const user = await ensureUser(userEmail, userName);
+  if (!user) throw new Error('USER_NOT_FOUND');
+
+  const goalExists = await prisma.goal.findFirst({ where: { id: goalId, userId: user.id } });
+  if (!goalExists) return null;
+
+  const recurring = await prisma.recurringPayment.findFirst({ where: { id: recurringId, goalId } });
+  if (!recurring) return null;
+
+  const updatedData: any = { ...data };
+  if (data.startDate) updatedData.startDate = new Date(data.startDate);
+  if (data.endDate) updatedData.endDate = new Date(data.endDate);
+
+  // If frequency or days changed, we might want to recalculate nextRunAt
+  // For simplicity, we only recalculate if they are provided
+  if (data.frequency || data.dayOfMonth !== undefined || data.dayOfWeek !== undefined) {
+    const freq = data.frequency || (recurring.frequency as any);
+    updatedData.nextRunAt = getNextRunDate({
+      frequency: freq,
+      dayOfMonth: data.dayOfMonth !== undefined ? data.dayOfMonth : (recurring.dayOfMonth ?? undefined),
+      dayOfWeek: data.dayOfWeek !== undefined ? data.dayOfWeek : (recurring.dayOfWeek ?? undefined),
+    });
+  }
+
+  return prisma.recurringPayment.update({
+    where: { id: recurringId },
+    data: updatedData,
+  });
+};
+
 export const deleteGoal = async (goalId: string, userEmail: string, userName?: string) => {
   const user = await ensureUser(userEmail, userName);
   if (!user) throw new Error('USER_NOT_FOUND');

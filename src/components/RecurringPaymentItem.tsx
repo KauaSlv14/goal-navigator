@@ -4,16 +4,17 @@ import {
   formatDate,
   frequencyLabels,
 } from '@/lib/types';
-import { RepeatIcon, Banknote, Smartphone, ArrowDownLeft, ArrowUpRight, Trash2 } from 'lucide-react';
+import { Edit, RepeatIcon, Banknote, Smartphone, ArrowDownLeft, ArrowUpRight, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
 interface RecurringPaymentItemProps {
   payment: RecurringPayment;
+  onEdit?: (payment: RecurringPayment) => void;
   onDelete?: (id: string) => void;
 }
 
-export const RecurringPaymentItem = ({ payment, onDelete }: RecurringPaymentItemProps) => {
+export const RecurringPaymentItem = ({ payment, onEdit, onDelete }: RecurringPaymentItemProps) => {
   const isIncome = payment.category === 'entrada';
 
   return (
@@ -76,16 +77,28 @@ export const RecurringPaymentItem = ({ payment, onDelete }: RecurringPaymentItem
             </span>
           )}
         </div>
-        {onDelete && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="opacity-0 group-hover/item:opacity-100 transition-opacity text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-8 w-8"
-            onClick={() => onDelete(payment.id)}
-          >
-            <Trash2 className="w-4 h-4" />
-          </Button>
-        )}
+        <div className="flex items-center gap-1">
+          {onEdit && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-muted-foreground hover:text-primary h-8 w-8"
+              onClick={() => onEdit(payment)}
+            >
+              <Edit className="w-4 h-4" />
+            </Button>
+          )}
+          {onDelete && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="opacity-0 group-hover/item:opacity-100 transition-opacity text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-8 w-8"
+              onClick={() => onDelete(payment.id)}
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );
