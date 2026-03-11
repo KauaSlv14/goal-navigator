@@ -1,4 +1,3 @@
-```typescript
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import {
