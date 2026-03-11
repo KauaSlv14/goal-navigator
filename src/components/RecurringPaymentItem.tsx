@@ -18,11 +18,11 @@ export const RecurringPaymentItem = ({ payment, onEdit, onDelete }: RecurringPay
   const isIncome = payment.category === 'entrada';
 
   return (
-    <div className="flex items-center justify-between py-3 border-b border-border/50 last:border-0 group/item">
-      <div className="flex items-center gap-3">
+    <div className="flex items-center justify-between py-4 border-b border-border/50 last:border-0 group">
+      <div className="flex items-center gap-3 min-w-0">
         <div
           className={cn(
-            'w-10 h-10 rounded-full flex items-center justify-center',
+            'w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center',
             isIncome ? 'bg-success/10' : 'bg-warning/10'
           )}
         >
@@ -30,12 +30,12 @@ export const RecurringPaymentItem = ({ payment, onEdit, onDelete }: RecurringPay
             className={cn('w-5 h-5', isIncome ? 'text-success' : 'text-warning')}
           />
         </div>
-        <div>
+        <div className="min-w-0 overflow-hidden">
           <div className="flex items-center gap-2">
-            <p className="font-medium text-foreground">{payment.name}</p>
+            <p className="font-medium text-foreground truncate">{payment.name}</p>
             <span
               className={cn(
-                'text-xs px-2 py-0.5 rounded-full',
+                'text-[10px] sm:text-xs px-2 py-0.5 rounded-full whitespace-nowrap',
                 isIncome
                   ? 'bg-success/10 text-success'
                   : 'bg-warning/10 text-warning'
@@ -44,61 +44,63 @@ export const RecurringPaymentItem = ({ payment, onEdit, onDelete }: RecurringPay
               {frequencyLabels[payment.frequency]}
             </span>
           </div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            {payment.type === 'cash' ? (
-              <Banknote className="w-3.5 h-3.5" />
-            ) : (
-              <Smartphone className="w-3.5 h-3.5" />
-            )}
-            <span>{payment.type === 'cash' ? 'Dinheiro' : 'Pix'}</span>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+            <span className="flex items-center gap-1">
+              {payment.type === 'cash' ? (
+                <Banknote className="w-3 h-3" />
+              ) : (
+                <Smartphone className="w-3 h-3" />
+              )}
+              {payment.type === 'cash' ? 'Dinheiro' : 'Pix'}
+            </span>
             <span>•</span>
-            <span>Próximo: {formatDate(payment.nextExecution)}</span>
+            <span className="truncate">Próximo: {formatDate(payment.nextExecution)}</span>
           </div>
         </div>
       </div>
-      <div className="flex items-center gap-4">
-        <div className="text-right">
+      <div className="flex flex-col items-end gap-1 ml-3 flex-shrink-0">
+        <div className="flex items-center gap-1">
           <span
             className={cn(
-              'font-bold flex items-center gap-1 justify-end',
+              'font-bold text-sm sm:text-base whitespace-nowrap flex items-center gap-0.5',
               isIncome ? 'text-success' : 'text-warning'
             )}
           >
             {isIncome ? (
-              <ArrowDownLeft className="w-4 h-4" />
+              <ArrowDownLeft className="w-3 h-3 sm:w-4 sm:h-4" />
             ) : (
-              <ArrowUpRight className="w-4 h-4" />
+              <ArrowUpRight className="w-3 h-3 sm:w-4 sm:h-4" />
             )}
             {formatCurrency(payment.amount)}
           </span>
-          {payment.lastExecution && (
-            <span className="text-xs text-muted-foreground">
-              Último: {formatDate(payment.lastExecution)}
-            </span>
-          )}
+          <div className="flex items-center ml-1">
+            {onEdit && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-primary transition-colors"
+                onClick={() => onEdit(payment)}
+              >
+                <Edit className="w-4 h-4" />
+              </Button>
+            )}
+            {onDelete && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
+                onClick={() => onDelete(payment.id)}
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
         </div>
-        <div className="flex items-center gap-1">
-          {onEdit && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-muted-foreground hover:text-primary h-8 w-8"
-              onClick={() => onEdit(payment)}
-            >
-              <Edit className="w-4 h-4" />
-            </Button>
-          )}
-          {onDelete && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="opacity-0 group-hover/item:opacity-100 transition-opacity text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-8 w-8"
-              onClick={() => onDelete(payment.id)}
-            >
-              <Trash2 className="w-4 h-4" />
-            </Button>
-          )}
-        </div>
+        {payment.lastExecution && (
+          <span className="text-[10px] text-muted-foreground">
+            Último: {formatDate(payment.lastExecution)}
+          </span>
+        )}
       </div>
     </div>
   );
