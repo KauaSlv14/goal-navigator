@@ -306,6 +306,6 @@ export const goalsRoutes = async (app: FastifyInstance) => {
       return reply.code(400).send({ error: 'Dados inválidos', details: parsed.error.flatten() });
     }
 
-    return { nextRunAt: getNextRunDate(parsed.data) };
+    return { nextRunAt: getNextRunDate(parsed.data as any) };
   });
 };
