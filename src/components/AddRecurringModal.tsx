@@ -183,7 +183,7 @@ export const AddRecurringModal = ({ isOpen, onClose, onSubmit }: AddRecurringMod
                   setFormData((prev) => ({ ...prev, category: 'entrada' }))
                 }
                 className={cn(
-                  'flex items-center justify-center gap-2 py-3 rounded-lg border-2 transition-all',
+                  'flex items-center justify-center gap-2 h-14 rounded-lg border-2 transition-all',
                   formData.category === 'entrada'
                     ? 'border-success bg-success/10 text-success'
                     : 'border-border bg-background text-muted-foreground hover:border-success/50'
@@ -198,7 +198,7 @@ export const AddRecurringModal = ({ isOpen, onClose, onSubmit }: AddRecurringMod
                   setFormData((prev) => ({ ...prev, category: 'saida' }))
                 }
                 className={cn(
-                  'flex items-center justify-center gap-2 py-3 rounded-lg border-2 transition-all',
+                  'flex items-center justify-center gap-2 h-14 rounded-lg border-2 transition-all',
                   formData.category === 'saida'
                     ? 'border-warning bg-warning/10 text-warning'
                     : 'border-border bg-background text-muted-foreground hover:border-warning/50'
@@ -219,7 +219,7 @@ export const AddRecurringModal = ({ isOpen, onClose, onSubmit }: AddRecurringMod
                   setFormData((prev) => ({ ...prev, type: 'cash' }))
                 }
                 className={cn(
-                  'flex items-center justify-center gap-2 py-3 rounded-lg border-2 transition-all',
+                  'flex items-center justify-center gap-2 h-14 rounded-lg border-2 transition-all',
                   formData.type === 'cash'
                     ? 'border-primary bg-primary/10 text-primary'
                     : 'border-border bg-background text-muted-foreground hover:border-primary/50'
@@ -234,7 +234,7 @@ export const AddRecurringModal = ({ isOpen, onClose, onSubmit }: AddRecurringMod
                   setFormData((prev) => ({ ...prev, type: 'pix' }))
                 }
                 className={cn(
-                  'flex items-center justify-center gap-2 py-3 rounded-lg border-2 transition-all',
+                  'flex items-center justify-center gap-2 h-14 rounded-lg border-2 transition-all',
                   formData.type === 'pix'
                     ? 'border-primary bg-primary/10 text-primary'
                     : 'border-border bg-background text-muted-foreground hover:border-primary/50'
@@ -313,12 +313,12 @@ export const AddRecurringModal = ({ isOpen, onClose, onSubmit }: AddRecurringMod
               type="button"
               variant="outline"
               onClick={onClose}
-              className="flex-1"
+              className="flex-1 h-12"
               disabled={submitting}
             >
               Cancelar
             </Button>
-            <Button type="submit" variant="gradient" className="flex-1" disabled={submitting}>
+            <Button type="submit" variant="gradient" className="flex-1 h-12" disabled={submitting}>
               Salvar
             </Button>
           </div>

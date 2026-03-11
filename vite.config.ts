@@ -21,8 +21,8 @@ export default defineConfig(({ mode }) => ({
         name: 'Metas',
         short_name: 'Metas',
         description: 'Seu navegador de metas',
-        theme_color: '#ffffff',
-        background_color: '#ffffff',
+        theme_color: '#09090b',
+        background_color: '#09090b',
         display: 'standalone',
         start_url: '/',
         icons: [
