@@ -187,7 +187,8 @@ export const GoalDetails = () => {
   const forecast = calculateForecast(
     goal.targetAmount,
     goal.totalCurrent,
-    goal.recurringPayments
+    goal.recurringPayments,
+    goal.transactions
   );
 
   const remaining = goal.targetAmount - goal.totalCurrent;

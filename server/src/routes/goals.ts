@@ -171,6 +171,25 @@ export const goalsRoutes = async (app: FastifyInstance) => {
     }
   });
 
+  app.delete('/:id/transactions/:transactionId', async (request, reply) => {
+    const user = getUserFromAuth(request.headers.authorization);
+    if (!user?.email) {
+      return reply.code(401).send({ error: 'Não autorizado' });
+    }
+    const params = z.object({ id: z.string().min(1), transactionId: z.string().min(1) }).parse(request.params);
+
+    try {
+      const tx = await deleteTransaction(params.id, params.transactionId, user.email, user.name);
+      if (!tx) return reply.code(404).send({ error: 'Transação não encontrada' });
+      return { ok: true };
+    } catch (err: any) {
+      if (err?.message === 'USER_NOT_FOUND') {
+        return reply.code(401).send({ error: 'Usuário não encontrado' });
+      }
+      throw err;
+    }
+  });
+
   app.post('/:id/recurring', async (request, reply) => {
     const user = getUserFromAuth(request.headers.authorization);
     if (!user?.email) {

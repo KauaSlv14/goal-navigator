@@ -172,17 +172,53 @@ export const convertToMonthlyRate = (amount: number, frequency: RecurrenceFreque
 export const calculateForecast = (
   targetAmount: number,
   currentTotal: number,
-  recurringPayments: RecurringPayment[]
+  recurringPayments: RecurringPayment[],
+  transactions?: Transaction[]
 ): Forecast => {
-  const monthlyIncome = recurringPayments
+  // --- Monthly income/expense from recurring payments ---
+  const recurringIncome = recurringPayments
     .filter((p) => p.category === 'entrada' && p.isActive)
     .reduce((sum, p) => sum + convertToMonthlyRate(p.amount, p.frequency), 0);
 
-  const monthlyExpenses = recurringPayments
+  const recurringExpenses = recurringPayments
     .filter((p) => p.category === 'saida' && p.isActive)
     .reduce((sum, p) => sum + convertToMonthlyRate(p.amount, p.frequency), 0);
 
-  const monthlyNetIncome = monthlyIncome - monthlyExpenses;
+  // --- Monthly income/expense from past transactions (average) ---
+  let transactionMonthlyNet = 0;
+  if (transactions && transactions.length > 0) {
+    const sorted = [...transactions].sort((a, b) =>
+      new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+    );
+    const firstDate = new Date(sorted[0].createdAt);
+    const lastDate = new Date(sorted[sorted.length - 1].createdAt);
+    const diffMs = lastDate.getTime() - firstDate.getTime();
+    const diffMonths = Math.max(1, diffMs / (1000 * 60 * 60 * 24 * 30));
+
+    const totalIncome = transactions
+      .filter((t) => t.category === 'entrada')
+      .reduce((sum, t) => sum + t.amount, 0);
+    const totalExpense = transactions
+      .filter((t) => t.category === 'saida')
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    transactionMonthlyNet = (totalIncome - totalExpense) / diffMonths;
+  }
+
+  // --- Blended: use recurring as the baseline, but add the transaction
+  //     average to capture one-off deposits/withdrawals ---
+  const recurringNet = recurringIncome - recurringExpenses;
+  // If we have both, blend them; otherwise use whichever is available
+  let monthlyNetIncome: number;
+  if (recurringPayments.length > 0 && transactions && transactions.length > 1) {
+    // Weighted: 60% recurring (predictable) + 40% past transaction average
+    monthlyNetIncome = recurringNet * 0.6 + transactionMonthlyNet * 0.4;
+  } else if (transactions && transactions.length > 1) {
+    monthlyNetIncome = transactionMonthlyNet;
+  } else {
+    monthlyNetIncome = recurringNet;
+  }
+
   const remaining = targetAmount - currentTotal;
 
   if (monthlyNetIncome <= 0) {
