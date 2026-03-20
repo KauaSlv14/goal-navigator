@@ -254,7 +254,6 @@ export const getFriendGoals = async (friendId: string, myUserId: string) => {
     const goals = await prisma.goal.findMany({
         where: {
             userId: friendId,
-            isCompleted: false,
         },
         include: {
             transactions: true,
@@ -278,7 +277,13 @@ export const getFriendGoals = async (friendId: string, myUserId: string) => {
                 ...p,
                 amount: decimalToNumber(p.amount),
             })),
-            ...progress,
+            isCompleted: progress.isCompleted,
+            currentCash: progress.cashBalance,
+            currentPix: progress.pixBalance,
+            totalCurrent: progress.totalCurrent,
+            totalExpenses: progress.totalExpenses,
+            percentage: progress.percentage,
+            expensePercentage: progress.expensePercentage,
         };
     });
 };
