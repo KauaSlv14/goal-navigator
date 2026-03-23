@@ -228,6 +228,7 @@ export const createTransaction = async (goalId: string, payload: TransactionForm
   const res = await fetch(`${API_URL}/api/goals/${goalId}/transactions`, {
     method: 'POST',
     headers: authHeaders(user.token),
+    body: JSON.stringify(payload),
   });
   await handleResponse(res);
 };
