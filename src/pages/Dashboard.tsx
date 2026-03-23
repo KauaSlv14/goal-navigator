@@ -134,16 +134,16 @@ export const Dashboard = () => {
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border pt-[env(safe-area-inset-top)]">
         <div className="container max-w-2xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-success flex items-center justify-center shadow-glow">
+            <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-success flex items-center justify-center shadow-glow flex-shrink-0">
                 <Target className="w-5 h-5 text-primary-foreground" />
               </div>
-              <div>
-                <h1 className="font-bold text-foreground">Cofre de Metas</h1>
-                <p className="text-xs text-muted-foreground">Olá, {user?.name || 'Usuário'}</p>
+              <div className="min-w-0 flex-1">
+                <h1 className="font-bold text-foreground text-sm sm:text-base truncate">Cofre de Metas</h1>
+                <p className="text-xs text-muted-foreground truncate">Olá, {user?.name?.split(' ')[0] || 'Usuário'}</p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0 ml-2">
               <Button variant="ghost" className="relative h-10 w-10 rounded-full bg-secondary hover:bg-secondary/80 p-0 overflow-hidden" onClick={() => navigate('/profile')}>
                 {user?.avatarUrl ? (
                   <img
