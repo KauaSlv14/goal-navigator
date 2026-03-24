@@ -28,6 +28,8 @@ import {
   RepeatIcon,
   Edit,
   Trash2,
+  Globe,
+  Lock
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -41,7 +43,8 @@ import {
   deleteRecurringPayment,
   updateTransaction,
   deleteTransaction,
-  updateRecurringPayment
+  updateRecurringPayment,
+  updateGoalVisibility
 } from '@/lib/api';
 import { AddRecurringModal } from '@/components/AddRecurringModal';
 
@@ -173,6 +176,22 @@ export const GoalDetails = () => {
     onError: (err: any) => toast.error(err?.message ?? 'Não foi possível excluir a meta'),
   });
 
+  const toggleVisibilityMutation = useMutation({
+    mutationFn: (newVisibility: boolean) => updateGoalVisibility(id!, newVisibility, user as UserSession),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['goal', id, user?.email] });
+      await queryClient.invalidateQueries({ queryKey: ['goals', user?.email] });
+
+      const updated = await queryClient.fetchQuery({
+        queryKey: ['goal', id, user?.email],
+        queryFn: () => getGoalDetails(id!, user as UserSession),
+      });
+      setGoal(updated);
+      toast.success(`Meta agora é ${updated.isPublic ? 'Pública' : 'Privada'}!`);
+    },
+    onError: (err: any) => toast.error(err?.message ?? 'Não foi possível alterar a visibilidade'),
+  });
+
   if (goalQuery.isLoading || !goal) {
     return (
       <div className="min-h-[100dvh] bg-background flex items-center justify-center">
@@ -286,6 +305,17 @@ export const GoalDetails = () => {
                 <span>Meta: {formatDate(goal.targetDate)}</span>
               </div>
             )}
+
+            <div className="flex items-center gap-2 mt-3 text-sm text-muted-foreground">
+              <button
+                disabled={toggleVisibilityMutation.isPending}
+                onClick={() => toggleVisibilityMutation.mutate(!goal.isPublic)}
+                className="flex items-center gap-1.5 hover:text-foreground transition-colors focus:outline-none"
+              >
+                {goal.isPublic ? <Globe className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+                <span className="underline decoration-dashed underline-offset-4">{goal.isPublic ? 'Pública' : 'Privada'}</span>
+              </button>
+            </div>
 
             {/* Progress */}
             <div className="mt-5">

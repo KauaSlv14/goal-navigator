@@ -266,6 +266,22 @@ export const deleteGoal = async (goalId: string, userEmail: string, userName?: s
   return true;
 };
 
+export const updateGoalVisibility = async (goalId: string, userEmail: string, isPublic: boolean, userName?: string) => {
+  const user = await ensureUser(userEmail, userName);
+  if (!user) throw new Error('USER_NOT_FOUND');
+
+  const goalExists = await prisma.goal.findFirst({ where: { id: goalId, userId: user.id } });
+  if (!goalExists) return null;
+
+  const goal = await prisma.goal.update({
+    where: { id: goalId },
+    data: { isPublic },
+    include: { transactions: true, recurringPayments: true },
+  });
+
+  return mapGoalWithProgress(goal);
+};
+
 export const deleteRecurringPayment = async (goalId: string, recurringId: string, userEmail: string, userName?: string) => {
   const user = await ensureUser(userEmail, userName);
   if (!user) throw new Error('USER_NOT_FOUND');

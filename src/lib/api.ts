@@ -395,6 +395,23 @@ export const removeFriend = async (friendId: string, user: UserSession) => {
   await handleResponse(res);
 };
 
+export const updateGoalVisibility = async (
+  goalId: string,
+  isPublic: boolean,
+  user: UserSession
+): Promise<ApiGoal> => {
+  const res = await fetch(`${API_URL}/api/goals/${goalId}/visibility`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${user.token}`,
+    },
+    body: JSON.stringify({ isPublic }),
+  });
+
+  return data;
+};
+
 export const deleteGoal = async (goalId: string, user: UserSession) => {
   const res = await fetch(`${API_URL}/api/goals/${goalId}`, {
     method: 'DELETE',

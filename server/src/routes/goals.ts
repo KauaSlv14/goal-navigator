@@ -12,6 +12,7 @@ import {
   deleteTransaction,
   updateRecurringPayment,
   getNextRunDate,
+  updateGoalVisibility,
 } from '../services/goalService.js';
 import { processDueRecurrences } from '../services/recurringService.js';
 import jwt from 'jsonwebtoken';
@@ -88,6 +89,28 @@ export const goalsRoutes = async (app: FastifyInstance) => {
         return reply.code(401).send({ error: 'Usuário não encontrado' });
       }
       throw err;
+    }
+  });
+
+  app.patch('/:id/visibility', async (request, reply) => {
+    const user = getUserFromAuth(request.headers.authorization);
+    if (!user?.email) {
+      return reply.code(401).send({ error: 'Não autorizado' });
+    }
+    const params = z.object({ id: z.string().min(1) }).parse(request.params);
+    const schema = z.object({ isPublic: z.boolean() });
+
+    try {
+      const parsed = schema.safeParse(request.body);
+      if (!parsed.success) {
+        return reply.code(400).send({ error: 'Dados inválidos', details: parsed.error.flatten() });
+      }
+
+      const goal = await updateGoalVisibility(params.id, user.email, parsed.data.isPublic, user.name);
+      if (!goal) return reply.code(404).send({ error: 'Meta não encontrada' });
+      return goal;
+    } catch (err: any) {
+      return reply.code(500).send({ error: 'Erro ao atualizar meta' });
     }
   });
 
