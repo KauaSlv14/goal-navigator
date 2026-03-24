@@ -61,6 +61,7 @@ model Goal {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   isCompleted   Boolean  @default(false)
+  isPublic      Boolean  @default(true)
 
   transactions      Transaction[]
   recurringPayments RecurringPayment[]

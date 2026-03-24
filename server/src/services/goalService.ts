@@ -21,6 +21,7 @@ type CreateGoalInput = {
   productLink?: string;
   targetDate?: string;
   safetyMargin?: number;
+  isPublic?: boolean;
 };
 
 export const getGoalsWithProgress = async (userEmail: string, userName?: string) => {
@@ -51,6 +52,7 @@ export const createGoal = async (data: CreateGoalInput) => {
       productLink: data.productLink,
       targetDate: data.targetDate ? new Date(data.targetDate) : undefined,
       safetyMargin: data.safetyMargin ?? 0,
+      isPublic: data.isPublic ?? true,
     },
   });
 
@@ -342,6 +344,7 @@ const mapGoalWithProgress = (goal: any) => {
     createdAt: goal.createdAt,
     updatedAt: goal.updatedAt,
     isCompleted: progress.isCompleted,
+    isPublic: goal.isPublic,
     currentCash: progress.cashBalance,
     currentPix: progress.pixBalance,
     totalCurrent: progress.totalCurrent,

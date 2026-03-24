@@ -63,6 +63,7 @@ export const goalsRoutes = async (app: FastifyInstance) => {
       productLink: z.string().url().optional().or(z.literal('')),
       targetDate: z.string().optional(),
       safetyMargin: z.number().min(0).max(100).optional(),
+      isPublic: z.boolean().optional(),
     });
 
     const parsed = schema.safeParse(request.body);
@@ -79,6 +80,7 @@ export const goalsRoutes = async (app: FastifyInstance) => {
         targetAmount: parsed.data.targetAmount || 0,
         initialCash: parsed.data.initialCash || 0,
         initialPix: parsed.data.initialPix || 0,
+        isPublic: parsed.data.isPublic ?? true,
       });
       return goal;
     } catch (err: any) {

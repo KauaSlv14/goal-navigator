@@ -8,8 +8,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Target, Link, Calendar, Shield, Banknote, Smartphone, ImageIcon, Loader2 } from 'lucide-react';
+import { Target, Link, Calendar, Shield, Banknote, Smartphone, ImageIcon, Loader2, Globe, Lock } from 'lucide-react';
 import { toast } from 'sonner';
+import { Switch } from '@/components/ui/switch';
 import { GoalFormData } from '@/lib/types';
 
 interface CreateGoalModalProps {
@@ -36,6 +37,7 @@ export const CreateGoalModal = ({
     imageUrl: '',
     targetDate: '',
     safetyMargin: 10,
+    isPublic: true,
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -119,6 +121,7 @@ export const CreateGoalModal = ({
         imageUrl: '',
         targetDate: '',
         safetyMargin: 10,
+        isPublic: true,
       });
       setUploadedImageName('');
       setImageInputKey((prev) => prev + 1);
@@ -326,6 +329,25 @@ export const CreateGoalModal = ({
             <p className="text-xs text-muted-foreground">
               Adiciona uma reserva extra ao valor alvo para imprevistos
             </p>
+          </div>
+
+          {/* Visibility */}
+          <div className="flex items-center justify-between p-4 bg-muted rounded-xl">
+            <div className="space-y-0.5">
+              <Label className="text-sm font-medium flex items-center gap-1.5">
+                {formData.isPublic ? <Globe className="w-4 h-4 text-primary" /> : <Lock className="w-4 h-4 text-muted-foreground" />}
+                Visibilidade Pública
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                {formData.isPublic
+                  ? 'Seus amigos poderão ver o progresso desta meta'
+                  : 'Esta meta será privada apenas para você'}
+              </p>
+            </div>
+            <Switch
+              checked={formData.isPublic}
+              onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isPublic: checked }))}
+            />
           </div>
 
           {/* Actions */}

@@ -43,6 +43,7 @@ export interface Goal {
   createdAt: Date;
   updatedAt: Date;
   isCompleted: boolean;
+  isPublic: boolean;
 }
 
 export interface GoalWithProgress extends Goal {
@@ -63,6 +64,7 @@ export interface GoalFormData {
   imageUrl: string;
   targetDate: string;
   safetyMargin: number;
+  isPublic?: boolean;
 }
 
 export interface TransactionFormData {

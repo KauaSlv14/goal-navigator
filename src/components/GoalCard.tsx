@@ -1,4 +1,4 @@
-import { Target, Calendar, ArrowRight, Banknote, Smartphone, MinusCircle } from 'lucide-react';
+import { Target, Calendar, ArrowRight, Banknote, Smartphone, MinusCircle, Lock, Globe } from 'lucide-react';
 import { GoalWithProgress, formatCurrency, formatDate } from '@/lib/types';
 import { ProgressBar } from './ProgressBar';
 import { cn } from '@/lib/utils';
@@ -47,8 +47,15 @@ export const GoalCard = ({ goal, onClick, onAddTransaction, index = 0 }: GoalCar
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
-            <h3 className="font-bold text-foreground truncate text-lg">
+            <h3 className="font-bold text-foreground truncate text-lg flex items-center gap-2">
               {goal.name}
+              {!document.location.pathname.includes('/friends') && (
+                goal.isPublic ? (
+                  <Globe className="w-4 h-4 text-muted-foreground" aria-label="Pública" />
+                ) : (
+                  <Lock className="w-4 h-4 text-muted-foreground" aria-label="Privada" />
+                )
+              )}
             </h3>
             <div className="flex items-center gap-2">
               {/* Add Expense Action - Compact */}

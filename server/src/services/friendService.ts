@@ -254,6 +254,7 @@ export const getFriendGoals = async (friendId: string, myUserId: string) => {
     const goals = await prisma.goal.findMany({
         where: {
             userId: friendId,
+            isPublic: true,
         },
         include: {
             transactions: true,

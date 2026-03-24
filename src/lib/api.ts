@@ -55,6 +55,7 @@ interface ApiGoal {
   createdAt: string;
   updatedAt: string;
   isCompleted: boolean;
+  isPublic: boolean;
   currentCash: number;
   currentPix: number;
   totalCurrent: number;
@@ -133,6 +134,7 @@ const mapGoal = (goal: ApiGoal): GoalWithProgress => ({
   createdAt: new Date(goal.createdAt),
   updatedAt: new Date(goal.updatedAt),
   isCompleted: goal.isCompleted,
+  isPublic: goal.isPublic,
   totalCurrent: goal.totalCurrent,
   totalExpenses: goal.totalExpenses,
   percentage: goal.percentage,
@@ -210,6 +212,7 @@ export const createGoal = async (payload: GoalFormData, user: UserSession): Prom
       productLink: payload.productLink || undefined,
       imageUrl: payload.imageUrl || undefined,
       targetDate: payload.targetDate || undefined,
+      isPublic: payload.isPublic ?? true,
     }),
   });
   const data: ApiGoal = await handleResponse(res);
