@@ -178,15 +178,10 @@ export const GoalDetails = () => {
 
   const toggleVisibilityMutation = useMutation({
     mutationFn: (newVisibility: boolean) => updateGoalVisibility(id!, newVisibility, user as UserSession),
-    onSuccess: async () => {
+    onSuccess: async (updated) => {
+      setGoal(updated as GoalWithProgress);
       await queryClient.invalidateQueries({ queryKey: ['goal', id, user?.email] });
       await queryClient.invalidateQueries({ queryKey: ['goals', user?.email] });
-
-      const updated = await queryClient.fetchQuery({
-        queryKey: ['goal', id, user?.email],
-        queryFn: () => getGoalDetails(id!, user as UserSession),
-      });
-      setGoal(updated);
       toast.success(`Meta agora é ${updated.isPublic ? 'Pública' : 'Privada'}!`);
     },
     onError: (err: any) => toast.error(err?.message ?? 'Não foi possível alterar a visibilidade'),

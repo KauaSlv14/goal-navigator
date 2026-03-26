@@ -399,7 +399,7 @@ export const updateGoalVisibility = async (
   goalId: string,
   isPublic: boolean,
   user: UserSession
-): Promise<ApiGoal> => {
+): Promise<GoalWithProgress> => {
   const res = await fetch(`${API_URL}/api/goals/${goalId}/visibility`, {
     method: 'PATCH',
     headers: {
@@ -409,7 +409,8 @@ export const updateGoalVisibility = async (
     body: JSON.stringify({ isPublic }),
   });
 
-  return data;
+  const data: ApiGoal = await handleResponse(res);
+  return mapGoal(data);
 };
 
 export const deleteGoal = async (goalId: string, user: UserSession) => {
